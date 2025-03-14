@@ -1,0 +1,8 @@
+{
+"type": "FeatureCollection",
+"name": "Chapter 5",
+"features": [
+{ "type": "Feature", "properties": { "Name": "Cliffs of Moher", "description": "The breathtaking cliffs where the 'Tentacles of Doom' episode was filmed. Watch your step - it's a long way down!", "completed": false }, "geometry": { "type": "Point", "coordinates": [-9.4268, 52.9715] } },
+{ "type": "Feature", "properties": { "Name": "Moher Tower", "description": "The historic tower featured in several Father Ted scenes. Offers stunning views of the Atlantic.", "completed": false }, "geometry": { "type": "Point", "coordinates": [-9.4275, 52.9722] } }
+]
+}

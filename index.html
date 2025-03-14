@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Father Ted Film Tourism Trail</title>
+  <link rel="stylesheet" href="styles.css">
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&family=Irish+Grover&display=swap" rel="stylesheet">
+  <!-- Load Google Maps API with proper async pattern -->
+  <script>
+    function initGoogleMaps() {
+      const script = document.createElement('script');
+      script.src = `https://maps.googleapis.com/maps/api/js?key=AIzaSyD_VbN4V32Pm04itsa_wjyiXYt0u47gMVc&libraries=places&callback=initMap`;
+      script.async = true;
+      script.defer = true;
+      document.head.appendChild(script);
+    }
+    window.addEventListener('load', initGoogleMaps);
+  </script>
+</head>
+<body>
+  <div class="app-container">
+    <!-- Intro Screen -->
+    <div id="intro-screen" class="screen active">
+      <div class="intro-header">
+        <img src="assets/images/logo.png" alt="Father Ted Logo" class="logo">
+        <h1>The Craggy Island Trail</h1>
+      </div>
+      <div class="intro-footer">
+        <p>Created by Shayne Fogarty</p>
+        <p>A Thesis Project for University of Porto</p>
+        <p><a href="mailto:up202302222@up.pt">up202302222@up.pt</a></p>
+      </div>
+    </div>
+
+    <!-- Start Page -->
+    <div id="start-page" class="screen">
+      <div class="start-page-content">
+        <div class="welcome-text">
+          Welcome to the ultimate Father Ted tour, where you'll visit iconic filming locations in the heart of County Clare. This is your chance to step into Craggy Island… well, sort of!
+        </div>
+        <button id="start-trail-button">Start Trail</button>
+      </div>
+      <div class="button-group">
+        <button id="settings-button">Settings</button>
+      </div>
+    </div>
+
+    <!-- Chapter Selection Page -->
+    <div id="chapter-selection-page" class="screen">
+      <div class="button-group">
+        <button id="back-button">Back</button>
+        <button id="settings-button">Settings</button>
+      </div>
+      <h2>Select a Chapter</h2>
+      <div class="progress-bar">
+        <div class="progress-fill"></div>
+        <img src="assets/images/caravan.png" alt="Caravan Icon" class="caravan-icon">
+        <span class="progress-text">0%</span>
+      </div>
+      <div id="chapter-list">
+        <button class="chapter-button" data-chapter="1">
+          <div class="chapter-content">
+            <div class="chapter-title">Chapter 1: Father Ted's House</div>
+            <div class="chapter-description">Begin your journey at the iconic parochial house where Father Ted, Dougal, and Jack lived. Don't forget to have a nice cup of tea!</div>
+          </div>
+          <span class="dropdown-toggle">▼</span>
+        </button>
+        <button class="chapter-button" data-chapter="2">
+          <div class="chapter-content">
+            <div class="chapter-title">Chapter 2: St Kevin's Stump</div>
+            <div class="chapter-description">Explore the mysterious stump where our favorite priests got lost picking mushrooms. Was it really haunted, or were the mushrooms... special?</div>
+          </div>
+          <span class="dropdown-toggle">▼</span>
+        </button>
+        <button class="chapter-button" data-chapter="3">
+          <div class="chapter-content">
+            <div class="chapter-title">Chapter 3: Aillwee Cave</div>
+            <div class="chapter-description">Visit the famous cave system where Father Ted had his memorable encounter with Richard Wilson. I don't belieeeve it!</div>
+          </div>
+          <span class="dropdown-toggle">▼</span>
+        </button>
+        <button class="chapter-button" data-chapter="4">
+          <div class="chapter-content">
+            <div class="chapter-title">Chapter 4: Kilfenora Village</div>
+            <div class="chapter-description">Take a tour through Kilfenora Village, where you'll find Mrs. O'Reilly's house, Pat Mustard's milk route, and the pub where Ted met the Chinese community.</div>
+          </div>
+          <span class="dropdown-toggle">▼</span>
+        </button>
+        <button class="chapter-button" data-chapter="5">
+          <div class="chapter-content">
+            <div class="chapter-title">Chapter 5: Cliffs of Moher</div>
+            <div class="chapter-description">Experience the majestic Cliffs of Moher and Moher Tower, featured in the 'Tentacles of Doom' episode. Mind the edge!</div>
+          </div>
+          <span class="dropdown-toggle">▼</span>
+        </button>
+      </div>
+      <div id="completion-message" class="completion-message" style="display: none;">
+        <h3>You've completed the Craggy Island Trail!</h3>
+        <p>You've had your fun, and that's all that matters.</p>
+        <button class="share-button" onclick="shareApp()">Share</button>
+      </div>
+    </div>
+
+    <!-- Chapter Page -->
+    <div id="chapter-page" class="screen">
+      <div class="button-group">
+        <button id="back-button">Back</button>
+        <button id="settings-button">Settings</button>
+      </div>
+      <div class="chapter-content-wrapper">
+        <h2 id="chapter-number">Chapter 1</h2>
+        <h3 id="chapter-title">Father Ted's House</h3>
+        <img id="chapter-image" src="" alt="Chapter location" class="chapter-image">
+        <p id="chapter-description"></p>
+        <div id="map"></div>
+        <div class="location-buttons">
+          <button id="get-directions">Get Directions</button>
+          <button id="im-here">I'm Here</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Arrival Page -->
+    <div id="arrival-page" class="screen">
+      <h2>You have arrived!</h2>
+      <p>Can you see [X item] beside you?</p>
+      <button id="yes-button">Yes</button>
+      <button id="no-button">No</button>
+      <div class="button-group">
+        <button id="settings-button">Settings</button>
+        <button id="back-button">Back</button>
+      </div>
+    </div>
+
+    <!-- Settings Page -->
+    <div id="settings-page" class="screen">
+      <div class="button-group">
+        <button id="back-button">Back</button>
+        <button id="settings-button">Settings</button>
+      </div>
+      <div class="settings-container">
+        <h2>Settings</h2>
+        <div class="settings-group">
+          <label for="volume">Volume</label>
+          <input type="range" id="volume" min="0" max="1" step="0.1" value="1">
+        </div>
+        <div class="settings-group">
+          <label for="text-size">Text Size</label>
+          <input type="range" id="text-size" min="12" max="24" step="1" value="16">
+        </div>
+        <div class="settings-disclaimer-link" onclick="showDisclaimer()">View Legal Disclaimer</div>
+      </div>
+    </div>
+
+    <!-- Audio for Music and Sound Effects -->
+    <audio id="background-music" loop>
+      <source src="assets/sounds/background-music.mp3" type="audio/mpeg">
+      Your browser does not support the audio element.
+    </audio>
+  </div>
+
+  <div id="location-popup" class="popup-overlay" style="display: none;">
+    <div class="popup-content">
+      <h3 id="location-question"></h3>
+      <div class="popup-buttons">
+        <button class="popup-button yes" id="popup-yes">Yes</button>
+        <button class="popup-button no" id="popup-no">No</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="congratulations-popup" class="popup-overlay" style="display: none;">
+    <div class="popup-content">
+      <div class="congratulations">🎉 Congratulations!</div>
+      <p id="congratulations-message"></p>
+      <div class="popup-buttons">
+        <button class="popup-button yes" id="continue-button">Continue</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Disclaimer Popup -->
+  <div id="disclaimer-popup" class="disclaimer-popup">
+    <div class="disclaimer-text">
+      This project, Father Ted: The Craggy Island Trail, is an educational work and is not affiliated with or endorsed by Hat Trick Productions or Channel 4. Father Ted and all related characters, quotes, and imagery are the property of their respective rights holders. This use is intended for educational purposes only and does not claim ownership of any copyrighted material.
+    </div>
+    <button class="disclaimer-close" onclick="hideDisclaimer()">Close</button>
+  </div>
+
+  <!-- Move scripts to end of body -->
+  <script>
+    // Initialize the Google Maps loader
+    function initGoogleMaps() {
+      if (window.google && window.google.maps) {
+        if (typeof initMap === 'function') {
+          initMap();
+        }
+        return;
+      }
+      
+      const script = document.createElement('script');
+      script.src = `https://maps.googleapis.com/maps/api/js?key=AIzaSyD_VbN4V32Pm04itsa_wjyiXYt0u47gMVc&libraries=places&callback=handleGoogleMapsLoad`;
+      script.async = true;
+      script.defer = true;
+      
+      script.onerror = function() {
+        console.error('Failed to load Google Maps API');
+        document.getElementById('map').innerHTML = 
+          '<div style="padding: 20px; text-align: center;">Failed to load map. Please check your internet connection.</div>';
+      };
+      
+      document.head.appendChild(script);
+    }
+    
+    // Handle Google Maps load callback
+    window.handleGoogleMapsLoad = function() {
+      console.log('Google Maps API loaded');
+      if (typeof initMap === 'function') {
+        initMap();
+      }
+    };
+    
+    // Initialize maps when showing chapter page
+    const chapterPage = document.getElementById('chapter-page');
+    const observer = new MutationObserver((mutations) => {
+      mutations.forEach((mutation) => {
+        if (mutation.target.classList.contains('active')) {
+          console.log('Chapter page active, initializing map');
+          initGoogleMaps();
+        }
+      });
+    });
+    
+    observer.observe(chapterPage, {
+      attributes: true,
+      attributeFilter: ['class']
+    });
+    
+    // Call initialization on page load
+    window.addEventListener('load', function() {
+      if (chapterPage.classList.contains('active')) {
+        initGoogleMaps();
+      }
+    });
+  </script>
+  <script src="script.js"></script>
+</body>
+</html>

@@ -1,0 +1,7 @@
+{
+"type": "FeatureCollection",
+"name": "Chapter 1",
+"features": [
+{ "type": "Feature", "properties": { "Name": "Father Ted's House", "description": "The iconic parochial house where Father Ted, Dougal, and Jack lived. Known locally as Glanquin Farmhouse.", "completed": false }, "geometry": { "type": "Point", "coordinates": [-9.0767, 52.9873] } }
+]
+}

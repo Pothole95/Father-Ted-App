@@ -1,0 +1,66 @@
+{
+"type": "FeatureCollection",
+"name": "Chapter 4",
+"features": [
+{
+  "type": "Feature",
+  "properties": {
+    "Name": "Mrs. O'Reilly's House",
+    "description": "The famous house where Pat Mustard made his milk deliveries. A key location in the Speed 3 episode.",
+    "completed": false
+  },
+  "geometry": {
+    "type": "Point",
+    "coordinates": [-9.218, 52.99]
+  }
+},
+{
+  "type": "Feature",
+  "properties": {
+    "Name": "Vaughan's Pub",
+    "description": "The pub where Father Ted met with Craggy Island's Chinese community. A must-visit location for fans!",
+    "completed": false
+  },
+  "geometry": {
+    "type": "Point",
+    "coordinates": [-9.2197023, 52.9900351]
+  }
+},
+{
+  "type": "Feature",
+  "properties": {
+    "Name": "Kilfenora Community Hall",
+    "description": "Featured in 'Think Fast, Father Ted' where the infamous raffle took place.",
+    "completed": false
+  },
+  "geometry": {
+    "type": "Point",
+    "coordinates": [-9.217898, 52.990179]
+  }
+},
+{
+  "type": "Feature",
+  "properties": {
+    "Name": "St Fachanan's Church",
+    "description": "The church featured in the 'Going to America' episode. A beautiful historic building.",
+    "completed": false
+  },
+  "geometry": {
+    "type": "Point",
+    "coordinates": [-9.2191725, 52.9900267]
+  }
+},
+{
+  "type": "Feature",
+  "properties": {
+    "Name": "Linnanes Pub",
+    "description": "Where Dougal waited during the Speed 3 episode. Still serving great pints today!",
+    "completed": false
+  },
+  "geometry": {
+    "type": "Point",
+    "coordinates": [-9.2155811, 52.990466]
+  }
+}
+]
+}

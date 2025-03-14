@@ -1,0 +1,7 @@
+{
+"type": "FeatureCollection",
+"name": "Chapter 2",
+"features": [
+{ "type": "Feature", "properties": { "Name": "St Kevin's Stump", "description": "The mysterious stump where Father Ted and Dougal got lost while mushroom picking. A local landmark in the Burren.", "completed": false }, "geometry": { "type": "Point", "coordinates": [-9.1156, 53.0215] } }
+]
+}
