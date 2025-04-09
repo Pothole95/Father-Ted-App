@@ -1,7 +1,18 @@
 {
-"type": "FeatureCollection",
-"name": "Chapter 3",
-"features": [
-{ "type": "Feature", "properties": { "Name": "Aillwee Cave", "description": "The famous cave system where Father Ted filmed 'The Mainland' episode with Richard Wilson. A stunning natural attraction.", "completed": false }, "geometry": { "type": "Point", "coordinates": [-9.1428, 53.0891] } }
-]
+  "type": "FeatureCollection",
+  "name": "Chapter 3",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "Name": "Aillwee Cave",
+        "description": "The famous cave system where Father Ted filmed 'The Mainland' episode with Richard Wilson. A stunning natural attraction.",
+        "completed": false
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-9.1428, 53.0891]
+      }
+    }
+  ]
 }

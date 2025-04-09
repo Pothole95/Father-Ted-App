@@ -13,7 +13,7 @@ const navigationSequence = {
   "chapter-selection-page": "start-page",
   "chapter-page": "chapter-selection-page",
   "arrival-page": "chapter-page",
-  "settings-page": "chapter-selection-page"
+  "settings-page": ["start-page", "chapter-selection-page"] // Can go back to either page
 };
 
 // Add chapter image mapping
@@ -198,6 +198,11 @@ function showScreen(screenId) {
     console.log('Found target screen:', screenId);
     targetScreen.classList.add('active');
     
+    // Track navigation history
+    if (screenId !== "settings-page") {
+      navigationStack.push(screenId);
+    }
+    
     // Toggle button group visibility for all screens except intro
     const buttonGroup = document.querySelector('.button-group');
     if (buttonGroup) {
@@ -310,90 +315,97 @@ function updateChapterInfo(chapterNumber) {
   const chapterData = {
     "1": {
       title: "Father Ted's House",
-      description: "Visit the iconic parochial house where Father Ted, Dougal, and Jack lived. Known locally as Glanquin Farmhouse."
+      description: "Visit the iconic parochial house where Father Ted, Dougal, and Jack lived. Don't forget to have a nice cup of tea!",
+      narrative: "Father Dougal hasn't been showing up to mass lately. Let's start our search at the parochial house. Maybe he's just having a lie-in?",
+      arrivalText: "I'm here",
+      location: { lat: 52.9719, lng: -9.4264 },
+      image: "assets/images/father-ted-house.jpg"
     },
     "2": {
       title: "St Kevin's Stump",
-      description: "A mysterious ancient stump where Father Ted and Dougal once got lost while mushroom picking. Legend has it that the stump has healing powers..."
+      description: "Explore the mysterious stump where our favorite priests got lost picking mushrooms. Was it really haunted, or were the mushrooms... special?",
+      narrative: "Mrs. Doyle mentioned seeing Dougal near the stump. He was looking for mushrooms... or was he looking for something else?",
+      arrivalText: "I'm here",
+      location: { lat: 52.9719, lng: -9.4264 },
+      image: "assets/images/stump.jpg"
     },
     "3": {
       title: "Aillwee Cave",
-      description: "The famous cave system where Father Ted filmed 'The Mainland' episode. Watch out for any suspicious characters saying 'I don't belieeeve it!'"
+      description: "Visit the famous cave system where Father Ted had his memorable encounter with Richard Wilson. I don't belieeeve it!",
+      narrative: "A local farmer saw someone matching Dougal's description entering the cave. He was carrying a torch and muttering about 'the truth being out there'...",
+      arrivalText: "I'm here",
+      location: { lat: 53.0719, lng: -9.3264 },
+      image: "assets/images/cave.jpg"
     },
     "4": {
       title: "Kilfenora Village",
-      description: "Tour through Kilfenora Village, visiting Mrs. O'Reilly's house, Pat Mustard's milk route, and the pub where Ted met the Chinese community."
+      description: "Take a tour through Kilfenora Village, where you'll find Mrs. O'Reilly's house, Pat Mustard's milk route, and the pub where Ted met the Chinese community.",
+      narrative: "Mrs. O'Reilly mentioned seeing Dougal at the pub. He was trying to explain something about 'the Chinese' to everyone...",
+      arrivalText: "I'm here",
+      location: { lat: 52.9719, lng: -9.4264 },
+      image: "assets/images/kilfenora.jpg"
     },
     "5": {
       title: "Cliffs of Moher",
-      description: "Experience the majestic Cliffs of Moher and Moher Tower, featured in the 'Tentacles of Doom' episode. Mind the edge!"
+      description: "Experience the majestic Cliffs of Moher and Moher Tower, featured in the 'Tentacles of Doom' episode. Mind the edge!",
+      narrative: "Just got a call from Dougal! He's at Kilkelly Caravan Park, trying to convince everyone that the milkman is actually an alien. He says he's been following the trail of milk bottles across Clare...",
+      arrivalText: "I'm here",
+      location: { lat: 52.9719, lng: -9.4264 },
+      image: "assets/images/cliffs.jpg"
     }
   };
 
   const data = chapterData[chapterNumber] || { 
     title: `Chapter ${chapterNumber}`, 
-    description: "Description not available" 
+    description: "Description not available",
+    narrative: "Narrative not available",
+    arrivalText: "Arrival text not available",
+    location: { lat: 0, lng: 0 },
+    image: "assets/images/default.jpg"
   };
 
   document.getElementById('chapter-number').textContent = `Chapter ${chapterNumber}`;
   document.getElementById('chapter-title').textContent = data.title;
   document.getElementById('chapter-description').textContent = data.description;
+  document.getElementById('chapter-narrative').textContent = data.narrative;
+  document.getElementById('chapter-image').src = data.image;
+  document.getElementById('im-here').textContent = data.arrivalText;
   
   console.log('Chapter info updated:', data);
 }
 
-// Initialize the map
+// Function to initialize the map and display user location
 function initMap() {
-  try {
-    console.log('Initializing map...');
-    
-    // Default center (Burren region)
-    const defaultCenter = { lat: 52.9873, lng: -9.0767 };
+  const mapElement = document.getElementById('map');
+  const chapterId = parseInt(mapElement.dataset.chapterId, 10);
 
-    // Check if map div exists
-    const mapDiv = document.getElementById("map");
-    if (!mapDiv) {
-      console.error('Map container not found!');
-      return;
-    }
-    console.log('Map container found:', mapDiv);
-
-    // Create map
-    map = new google.maps.Map(mapDiv, {
+  map = new google.maps.Map(mapElement, {
+    center: { lat: 52.9715, lng: -9.4262 }, // Default center
     zoom: 12,
-      center: defaultCenter,
-      mapTypeId: google.maps.MapTypeId.ROADMAP,
-      styles: [
-        {
-          featureType: "poi",
-          elementType: "labels",
-          stylers: [{ visibility: "off" }]
-        }
-      ]
-    });
+  });
 
-    console.log('Map created:', map);
-
-    // Initialize directions service and renderer
-  directionsService = new google.maps.DirectionsService();
-    directionsRenderer = new google.maps.DirectionsRenderer({
-      map: map,
-      suppressMarkers: true
-    });
-    directionsRenderer.setMap(map);
-
-    console.log('Map initialization complete');
-    
-    // If we have locations, add markers
-    if (locations && locations.length > 0) {
-      console.log('Adding initial markers...', locations);
-      addMarkersToMap();
-    } else {
-      console.log('No locations available yet');
-    }
-  } catch (error) {
-    console.error('Error initializing map:', error);
-    showError('Failed to initialize map: ' + error.message);
+  // Add user location marker
+  if (navigator.geolocation) {
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        const userLocation = {
+          lat: position.coords.latitude,
+          lng: position.coords.longitude,
+        };
+        userMarker = new google.maps.Marker({
+          position: userLocation,
+          map: map,
+          icon: 'assets/images/user-icon.png', // Use a dummy icon if no custom icon is available
+          title: 'Your Location',
+        });
+        map.setCenter(userLocation);
+      },
+      (error) => {
+        console.error('Error fetching user location:', error);
+      }
+    );
+  } else {
+    console.warn('Geolocation is not supported by this browser.');
   }
 }
 
@@ -562,7 +574,7 @@ function addMarkersToMap() {
           <p style="margin: 0;">${location.properties.description}</p>
           ${location.properties.completed ? 
             '<p style="color: #4CAF50; margin-top: 10px;">✓ Visited</p>' : 
-            '<p style="color: #FF5722; margin-top: 10px;">Not visited yet</p>'}
+            ''}
         </div>
       `
     });
@@ -662,7 +674,13 @@ function handleBackButton() {
   const currentScreen = document.querySelector(".screen.active");
   const previousScreen = navigationSequence[currentScreen.id];
   
-  if (previousScreen) {
+  if (currentScreen.id === "settings-page") {
+    // For settings page, go back to the most recently visited page
+    const lastScreen = navigationStack[navigationStack.length - 1];
+    if (lastScreen) {
+      showScreen(lastScreen);
+    }
+  } else if (previousScreen) {
     showScreen(previousScreen);
     
     // Stop music if going back to intro screen
@@ -674,47 +692,114 @@ function handleBackButton() {
   }
 }
 
-// Initialize button handlers
+// Sound effects
+const sounds = {
+    locationReached: new Audio('assets/sounds/effects/location-reached.mp3'),
+    chapter1Click: new Audio('assets/sounds/effects/Chapter-1-button-click.mp3'),
+    chapter2Click: new Audio('assets/sounds/effects/Chapter-2-button-click.mp3'),
+    chapter3Click: new Audio('assets/sounds/effects/Chapter-3-button-click.mp3'),
+    chapter4Click: new Audio('assets/sounds/effects/Chapter-4-button-click.mp3'),
+    chapter5Click: new Audio('assets/sounds/effects/Chapter-5-button-click.mp3')
+};
+
+// Function to play sound effect
+function playSound(soundName) {
+    const sound = sounds[soundName];
+    if (sound) {
+        sound.currentTime = 0;
+        sound.play().catch(error => console.log('Sound play failed:', error));
+    }
+}
+
+// Update the handleLocationResponse function
+function handleLocationResponse(isYes, chapterNumber) {
+    const popup = document.querySelector('.popup-overlay');
+    if (popup) popup.remove();
+    
+    if (isYes) {
+        console.log('Marking chapter as completed:', chapterNumber);
+        
+        // Play location reached sound
+        playSound('locationReached');
+        
+        // Ensure chapterNumber is a string
+        const chapterStr = chapterNumber.toString();
+        
+        // Mark chapter as completed in AppState
+        AppState.markChapterCompleted(chapterStr);
+        
+        // Update map markers
+        if (window.markers && locations) {
+            const markerIndex = locations.findIndex(loc => 
+                loc.properties.chapterNumber === chapterStr
+            );
+            if (markerIndex >= 0 && window.markers[markerIndex]) {
+                window.markers[markerIndex].setIcon({
+                    path: google.maps.SymbolPath.CIRCLE,
+                    scale: 12,
+                    fillColor: '#4CAF50',
+                    fillOpacity: 1,
+                    strokeColor: '#ffffff',
+                    strokeWeight: 2
+                });
+            }
+        }
+        
+        // Force update all UI elements
+        AppState.updateUI();
+        updateChapterButtons();
+        
+        // Show congratulations message
+        showCongratulations(chapterStr);
+    } else {
+        showError("Keep exploring! You'll find it soon!");
+    }
+}
+
+// Update chapter button click handlers
 function initializeButtonHandlers() {
-  console.log('Initializing button handlers...');
-  
-  // Start trail button handler
-  const startTrailButton = document.getElementById('start-trail-button');
-  if (startTrailButton) {
-    console.log('Found start trail button');
-    startTrailButton.addEventListener('click', () => {
-      console.log('Start Trail button clicked');
-      showScreen('chapter-selection-page');
+    console.log('Initializing button handlers...');
+    
+    // Start trail button handler
+    const startTrailButton = document.getElementById('start-trail-button');
+    if (startTrailButton) {
+        console.log('Found start trail button');
+        startTrailButton.addEventListener('click', () => {
+            console.log('Start Trail button clicked');
+            showScreen('chapter-selection-page');
+        });
+    }
+    
+    // Settings button handler - add to all instances
+    document.querySelectorAll('#settings-button').forEach(button => {
+        button.addEventListener('click', () => {
+            console.log('Settings button clicked');
+            showScreen('settings-page');
+        });
     });
-  }
-  
-  // Settings button handler - add to all instances
-  document.querySelectorAll('#settings-button').forEach(button => {
-    button.addEventListener('click', () => {
-      console.log('Settings button clicked');
-      showScreen('settings-page');
+
+    // Back button handler - add to all instances
+    document.querySelectorAll('#back-button').forEach(button => {
+        button.addEventListener('click', handleBackButton);
     });
-  });
 
-  // Back button handler - add to all instances
-  document.querySelectorAll('#back-button').forEach(button => {
-    button.addEventListener('click', handleBackButton);
-  });
+    // Chapter buttons handler
+    document.querySelectorAll('.chapter-button').forEach(button => {
+        button.addEventListener('click', function() {
+            const chapterNum = this.getAttribute('data-chapter');
+            if (!chapterNum) return;
 
-  // Chapter buttons handler
-  document.querySelectorAll('.chapter-button').forEach(button => {
-    button.addEventListener('click', function() {
-      const chapterNum = this.getAttribute('data-chapter');
-      if (!chapterNum) return;
+            // Play chapter-specific sound effect
+            playSound(`chapter${chapterNum}Click`);
 
-      // Load chapter data and show chapter page
-      loadChapterData(chapterNum);
-      showScreen('chapter-page');
+            // Load chapter data and show chapter page
+            loadChapterData(chapterNum);
+            showScreen('chapter-page');
+        });
     });
-  });
 
-  // Update initial chapter states
-  updateChapterButtons();
+    // Update initial chapter states
+    updateChapterButtons();
 }
 
 // Update the updateChapterButtons function
@@ -868,48 +953,6 @@ function showCongratulations(chapterNumber) {
   document.body.appendChild(popup);
 }
 
-// Update the handleLocationResponse function
-function handleLocationResponse(isYes, chapterNumber) {
-  const popup = document.querySelector('.popup-overlay');
-  if (popup) popup.remove();
-  
-  if (isYes) {
-    console.log('Marking chapter as completed:', chapterNumber);
-    
-    // Ensure chapterNumber is a string
-    const chapterStr = chapterNumber.toString();
-    
-    // Mark chapter as completed in AppState
-    AppState.markChapterCompleted(chapterStr);
-    
-    // Update map markers
-    if (window.markers && locations) {
-      const markerIndex = locations.findIndex(loc => 
-        loc.properties.chapterNumber === chapterStr
-      );
-      if (markerIndex >= 0 && window.markers[markerIndex]) {
-        window.markers[markerIndex].setIcon({
-          path: google.maps.SymbolPath.CIRCLE,
-          scale: 12,
-          fillColor: '#4CAF50',
-          fillOpacity: 1,
-          strokeColor: '#ffffff',
-          strokeWeight: 2
-        });
-      }
-    }
-    
-    // Force update all UI elements
-    AppState.updateUI();
-    updateChapterButtons();
-    
-    // Show congratulations message
-    showCongratulations(chapterStr);
-  } else {
-    showError("Keep exploring! You'll find it soon!");
-  }
-}
-
 // Function to handle congratulations continuation
 function handleCongratulations() {
   // Remove all popup overlays
@@ -940,18 +983,33 @@ function initializeSettings() {
   backgroundMusic.volume = savedVolume;
   document.documentElement.style.setProperty('--base-font-size', `${savedTextSize}px`);
   
+  // Set initial slider colors
+  updateSliderColors(volumeSlider, 'volume-value');
+  updateSliderColors(textSizeSlider, 'text-size-value');
+  
   // Add event listeners
   volumeSlider.addEventListener('input', (e) => {
     const value = e.target.value;
-    backgroundMusic.volume = value;
+    // Update all audio elements
+    document.querySelectorAll('audio').forEach(audio => {
+      audio.volume = value;
+    });
     localStorage.setItem('volume', value);
+    updateSliderColors(volumeSlider, 'volume-value');
   });
   
   textSizeSlider.addEventListener('input', (e) => {
     const value = e.target.value;
     document.documentElement.style.setProperty('--base-font-size', `${value}px`);
     localStorage.setItem('textSize', value);
+    updateSliderColors(textSizeSlider, 'text-size-value');
   });
+}
+
+// Helper function to update slider colors
+function updateSliderColors(slider, variableName) {
+  const value = (slider.value - slider.min) / (slider.max - slider.min) * 100;
+  document.documentElement.style.setProperty(`--${variableName}`, `${value}%`);
 }
 
 // Add these functions near the top of the file
@@ -1027,4 +1085,97 @@ loadProgress();
   initializeButtonHandlers();
   initializeSettings();
   testChapterLoading();
+});
+
+window.addEventListener('load', () => {
+  if (navigator.geolocation) {
+    navigator.geolocation.getCurrentPosition(
+      position => {
+        console.log('User location accessed:', position.coords);
+      },
+      error => {
+        console.error('Error accessing user location:', error);
+      }
+    );
+  } else {
+    console.warn('Geolocation is not supported by this browser.');
+  }
+});
+
+document.querySelectorAll('.chapter-button').forEach((button) => {
+  button.addEventListener('click', () => {
+    const chapterId = button.dataset.chapter;
+    const chapterPage = document.getElementById('chapter-page');
+
+    // Set chapter-specific data
+    document.getElementById('chapter-number').textContent = `Chapter ${chapterId}`;
+    document.getElementById('map').dataset.chapterId = chapterId;
+
+    // Scroll to top
+    window.scrollTo(0, 0);
+
+    // Show chapter page
+    document.querySelectorAll('.screen').forEach((screen) => screen.classList.remove('active'));
+    chapterPage.classList.add('active');
+
+    // Initialize map for the chapter
+    loadChapterData(chapterId);
+  });
+});
+
+document.querySelectorAll('.chapter-button').forEach((button) => {
+  button.addEventListener('click', () => {
+    const chapterId = button.dataset.chapter;
+    const chapterPage = document.getElementById('chapter-page');
+
+    // Set chapter-specific data
+    document.getElementById('chapter-number').textContent = `Chapter ${chapterId}`;
+    document.getElementById('map').dataset.chapterId = chapterId;
+
+    // Scroll to top
+    window.scrollTo(0, 0);
+
+    // Show chapter page
+    document.querySelectorAll('.screen').forEach((screen) => screen.classList.remove('active'));
+    chapterPage.classList.add('active');
+
+    // Initialize map for the chapter
+    loadChapterData(chapterId);
+  });
+});
+
+window.addEventListener('load', () => {
+  if (navigator.geolocation) {
+    navigator.geolocation.getCurrentPosition(
+      position => {
+        console.log('User location accessed:', position.coords);
+      },
+      error => {
+        console.error('Error accessing user location:', error);
+      }
+    );
+  } else {
+    console.warn('Geolocation is not supported by this browser.');
+  }
+});
+
+document.querySelectorAll('.chapter-button').forEach((button) => {
+  button.addEventListener('click', () => {
+    const chapterId = button.dataset.chapter;
+    const chapterPage = document.getElementById('chapter-page');
+
+    // Set chapter-specific data
+    document.getElementById('chapter-number').textContent = `Chapter ${chapterId}`;
+    document.getElementById('map').dataset.chapterId = chapterId;
+
+    // Scroll to top
+    window.scrollTo(0, 0);
+
+    // Show chapter page
+    document.querySelectorAll('.screen').forEach((screen) => screen.classList.remove('active'));
+    chapterPage.classList.add('active');
+
+    // Initialize map for the chapter
+    loadChapterData(chapterId);
+  });
 });
