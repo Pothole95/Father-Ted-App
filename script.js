@@ -185,37 +185,20 @@ function saveProgress() {
 
 // Function to switch between screens
 function showScreen(screenId) {
-  console.log('Showing screen:', screenId);
-  
-  // Remove active class from all screens
-  document.querySelectorAll('.screen').forEach(screen => {
+  console.log(`Switching to screen: ${screenId}`);
+
+  // Hide all screens
+  document.querySelectorAll('.screen').forEach((screen) => {
     screen.classList.remove('active');
   });
-  
-  // Show target screen
+
+  // Show the target screen
   const targetScreen = document.getElementById(screenId);
   if (targetScreen) {
-    console.log('Found target screen:', screenId);
     targetScreen.classList.add('active');
-    
-    // Track navigation history
-    if (screenId !== "settings-page") {
-      navigationStack.push(screenId);
-    }
-    
-    // Toggle button group visibility for all screens except intro
-    const buttonGroup = document.querySelector('.button-group');
-    if (buttonGroup) {
-      buttonGroup.style.display = screenId === 'intro-screen' ? 'none' : 'flex';
-    }
-    
-    // Initialize buttons if showing chapter selection page
-    if (screenId === 'chapter-selection-page') {
-      initializeButtonHandlers();
-    }
+    handleBackgroundMusic(screenId); // Handle background music
   } else {
-    console.error(`Screen ${screenId} not found`);
-    console.log('Available screens:', Array.from(document.querySelectorAll('.screen')).map(s => s.id));
+    console.error(`Screen with ID "${screenId}" not found.`);
   }
 }
 
@@ -374,38 +357,58 @@ function updateChapterInfo(chapterNumber) {
   console.log('Chapter info updated:', data);
 }
 
-// Function to initialize the map and display user location
+// Initialize the map
 function initMap() {
-  const mapElement = document.getElementById('map');
-  const chapterId = parseInt(mapElement.dataset.chapterId, 10);
+  try {
+    console.log('Initializing map...');
+    
+    // Default center (Burren region)
+    const defaultCenter = { lat: 52.9873, lng: -9.0767 };
 
-  map = new google.maps.Map(mapElement, {
-    center: { lat: 52.9715, lng: -9.4262 }, // Default center
+    // Check if map div exists
+    const mapDiv = document.getElementById("map");
+    if (!mapDiv) {
+      console.error('Map container not found!');
+      return;
+    }
+    console.log('Map container found:', mapDiv);
+
+    // Create map
+    map = new google.maps.Map(mapDiv, {
     zoom: 12,
-  });
+      center: defaultCenter,
+      mapTypeId: google.maps.MapTypeId.ROADMAP,
+      styles: [
+        {
+          featureType: "poi",
+          elementType: "labels",
+          stylers: [{ visibility: "off" }]
+        }
+      ]
+    });
 
-  // Add user location marker
-  if (navigator.geolocation) {
-    navigator.geolocation.getCurrentPosition(
-      (position) => {
-        const userLocation = {
-          lat: position.coords.latitude,
-          lng: position.coords.longitude,
-        };
-        userMarker = new google.maps.Marker({
-          position: userLocation,
-          map: map,
-          icon: 'assets/images/user-icon.png', // Use a dummy icon if no custom icon is available
-          title: 'Your Location',
-        });
-        map.setCenter(userLocation);
-      },
-      (error) => {
-        console.error('Error fetching user location:', error);
-      }
-    );
-  } else {
-    console.warn('Geolocation is not supported by this browser.');
+    console.log('Map created:', map);
+
+    // Initialize directions service and renderer
+  directionsService = new google.maps.DirectionsService();
+    directionsRenderer = new google.maps.DirectionsRenderer({
+      map: map,
+      suppressMarkers: true
+    });
+    directionsRenderer.setMap(map);
+
+    console.log('Map initialization complete');
+    
+    // If we have locations, add markers
+    if (locations && locations.length > 0) {
+      console.log('Adding initial markers...', locations);
+      addMarkersToMap();
+    } else {
+      console.log('No locations available yet');
+    }
+  } catch (error) {
+    console.error('Error initializing map:', error);
+    showError('Failed to initialize map: ' + error.message);
   }
 }
 
@@ -671,26 +674,26 @@ function showPrompt(scene) {
 
 // Back button handler
 function handleBackButton() {
-  const currentScreen = document.querySelector(".screen.active");
+  const currentScreen = document.querySelector('.screen.active');
   const previousScreen = navigationSequence[currentScreen.id];
-  
-  if (currentScreen.id === "settings-page") {
-    // For settings page, go back to the most recently visited page
-    const lastScreen = navigationStack[navigationStack.length - 1];
-    if (lastScreen) {
-      showScreen(lastScreen);
-    }
+
+  if (Array.isArray(previousScreen)) {
+    // If multiple possible previous screens, default to the start page
+    showScreen('start-page');
   } else if (previousScreen) {
     showScreen(previousScreen);
-    
-    // Stop music if going back to intro screen
-    if (previousScreen === "intro-screen") {
-      const music = document.getElementById("background-music");
-      music.pause();
-      music.currentTime = 0;
-    }
+  } else {
+    console.error('No previous screen defined for:', currentScreen.id);
   }
 }
+
+// Update the settings page "Back" button handler
+document.addEventListener('DOMContentLoaded', () => {
+  const backButton = document.querySelector('#settings-page #back-button');
+  if (backButton) {
+    backButton.addEventListener('click', handleBackButton);
+  }
+});
 
 // Sound effects
 const sounds = {
@@ -1030,6 +1033,37 @@ function resetAppState() {
   showScreen('intro-screen');
 }
 
+// Function to handle background music based on the active screen
+function handleBackgroundMusic(screenId) {
+  const backgroundMusic = document.getElementById('background-music');
+  if (!backgroundMusic) return;
+
+  // Play music on the intro, start, settings, and chapter selection pages
+  if (screenId === 'intro-screen' || screenId === 'start-page' || screenId === 'settings-page' || screenId === 'chapter-selection-page') {
+    if (backgroundMusic.paused) {
+      backgroundMusic.play().catch((error) => {
+        console.error('Error playing background music:', error);
+      });
+    }
+  } else {
+    if (!backgroundMusic.paused) {
+      backgroundMusic.pause();
+    }
+  }
+}
+
+// Ensure music starts immediately on the intro page
+document.addEventListener('DOMContentLoaded', () => {
+  const backgroundMusic = document.getElementById('background-music');
+  if (backgroundMusic) {
+    backgroundMusic.volume = 1; // Set volume
+    backgroundMusic.play().catch((error) => {
+      console.error('Error playing background music:', error);
+    });
+  }
+  handleBackgroundMusic('intro-screen'); // Ensure music continues on other screens
+});
+
 // Update the DOMContentLoaded event listener
 document.addEventListener("DOMContentLoaded", () => {
   console.log('DOM Content Loaded');
@@ -1085,97 +1119,4 @@ loadProgress();
   initializeButtonHandlers();
   initializeSettings();
   testChapterLoading();
-});
-
-window.addEventListener('load', () => {
-  if (navigator.geolocation) {
-    navigator.geolocation.getCurrentPosition(
-      position => {
-        console.log('User location accessed:', position.coords);
-      },
-      error => {
-        console.error('Error accessing user location:', error);
-      }
-    );
-  } else {
-    console.warn('Geolocation is not supported by this browser.');
-  }
-});
-
-document.querySelectorAll('.chapter-button').forEach((button) => {
-  button.addEventListener('click', () => {
-    const chapterId = button.dataset.chapter;
-    const chapterPage = document.getElementById('chapter-page');
-
-    // Set chapter-specific data
-    document.getElementById('chapter-number').textContent = `Chapter ${chapterId}`;
-    document.getElementById('map').dataset.chapterId = chapterId;
-
-    // Scroll to top
-    window.scrollTo(0, 0);
-
-    // Show chapter page
-    document.querySelectorAll('.screen').forEach((screen) => screen.classList.remove('active'));
-    chapterPage.classList.add('active');
-
-    // Initialize map for the chapter
-    loadChapterData(chapterId);
-  });
-});
-
-document.querySelectorAll('.chapter-button').forEach((button) => {
-  button.addEventListener('click', () => {
-    const chapterId = button.dataset.chapter;
-    const chapterPage = document.getElementById('chapter-page');
-
-    // Set chapter-specific data
-    document.getElementById('chapter-number').textContent = `Chapter ${chapterId}`;
-    document.getElementById('map').dataset.chapterId = chapterId;
-
-    // Scroll to top
-    window.scrollTo(0, 0);
-
-    // Show chapter page
-    document.querySelectorAll('.screen').forEach((screen) => screen.classList.remove('active'));
-    chapterPage.classList.add('active');
-
-    // Initialize map for the chapter
-    loadChapterData(chapterId);
-  });
-});
-
-window.addEventListener('load', () => {
-  if (navigator.geolocation) {
-    navigator.geolocation.getCurrentPosition(
-      position => {
-        console.log('User location accessed:', position.coords);
-      },
-      error => {
-        console.error('Error accessing user location:', error);
-      }
-    );
-  } else {
-    console.warn('Geolocation is not supported by this browser.');
-  }
-});
-
-document.querySelectorAll('.chapter-button').forEach((button) => {
-  button.addEventListener('click', () => {
-    const chapterId = button.dataset.chapter;
-    const chapterPage = document.getElementById('chapter-page');
-
-    // Set chapter-specific data
-    document.getElementById('chapter-number').textContent = `Chapter ${chapterId}`;
-    document.getElementById('map').dataset.chapterId = chapterId;
-
-    // Scroll to top
-    window.scrollTo(0, 0);
-
-    // Show chapter page
-    document.querySelectorAll('.screen').forEach((screen) => screen.classList.remove('active'));
-    chapterPage.classList.add('active');
-
-    // Initialize map for the chapter
-    loadChapterData(chapterId);
-  });
 });

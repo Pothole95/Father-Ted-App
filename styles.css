@@ -298,13 +298,13 @@ h3 {
 }
 
 #intro-screen {
-    justify-content: space-between;
-    padding: 40px 20px;
-    cursor: pointer;
-    background-image: url('assets/images/backgrounds/intro-background.jpg');
+    justify-content: flex-start; /* Move content higher */
+    padding: 20px 20px;
+    background-image: url('assets/images/intro-background.jpg'); /* Use the provided background */
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;
+    color: white; /* Ensure all text is white */
 }
 
 #intro-screen.active {
@@ -314,35 +314,35 @@ h3 {
 }
 
 .intro-header {
-    position: absolute;
-    top: 50%;
+    position: relative;
+    top: 25%; /* Adjusted from 15% to 20% */
     left: 50%;
-    transform: translate(-50%, -50%);
+    transform: translate(-50%, 0);
     text-align: center;
     width: 100%;
     padding: 0 20px;
     box-sizing: border-box;
+    color: white; /* Ensure text is white */
 }
 
 .intro-header .logo {
-    width: 160px;
-    margin-bottom: 30px;
+    width: 180px; /* Adjust logo size */
+    margin-bottom: 20px;
     filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.2));
-    opacity: 0;
-    animation: fadeIn 1s ease forwards 0.5s;
 }
 
 .intro-header h1 {
-    font-size: 34px;
-    margin-bottom: 30px;
-    opacity: 0;
-    animation: fadeIn 1s ease forwards 1s;
+    font-size: 36px; /* Adjust font size */
+    margin-bottom: 20px;
+    color: white; /* Ensure text is white */
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5); /* Add drop shadow */
 }
 
 .intro-header .trail-text {
-    font-size: 38px;
+    font-size: 40px;
     display: block;
     margin-top: 5px;
+    color: white; /* Ensure text is white */
 }
 
 .intro-footer {
@@ -353,16 +353,17 @@ h3 {
     text-align: center;
     padding: 0 20px;
     box-sizing: border-box;
-    color: #666;
+    color: white; /* Ensure text is white */
 }
 
 .intro-footer p {
     margin: 5px 0;
     font-size: calc(var(--base-font-size) * 0.875);
+    color: white; /* Ensure text is white */
 }
 
 .intro-footer a {
-    color: #4CAF50;
+    color: white; /* Ensure links are white */
     text-decoration: none;
 }
 
@@ -900,4 +901,11 @@ h1, h2, h3 {
     .chapter-image {
         max-width: 100%;
     }
+}
+
+/* Style for the Father Ted logo on the intro page */
+#intro-screen .logo {
+  width: 200px; /* Keep the size the same */
+  margin: 24px auto; /* Adjust margin to move it higher */
+  display: block;
 }
