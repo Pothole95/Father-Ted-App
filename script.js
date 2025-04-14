@@ -16,14 +16,42 @@ const navigationSequence = {
   "settings-page": ["start-page", "chapter-selection-page"] // Can go back to either page
 };
 
-// Add chapter image mapping
+// Define chapter images with correct relative paths
 const chapterImages = {
-  "1": "assets/images/father-ted-house.jpg",
-  "2": "assets/images/st-kevins-stump.jpg",
-  "3": "assets/images/aillwee-cave.jpg",
-  "4": "assets/images/kilfenora-village.jpg",
-  "5": "assets/images/cliffs-of-moher.jpg"
+  '1': 'assets/images/Chapters/father-ted-house.jpg',
+  '2': 'assets/images/Chapters/st-kevins-stump.jpg',
+  '3': 'assets/images/Chapters/aillwee-cave.jpg',
+  '4': 'assets/images/Chapters/kilfenora-village.jpg',
+  '5': 'assets/images/Chapters/cliffs-of-moher.jpg',
 };
+
+// Function to set chapter images
+function setChapterImage(chapterId) {
+  const chapterImageElement = document.getElementById('chapter-image');
+  if (chapterImages[chapterId]) {
+    const imagePath = chapterImages[chapterId];
+    console.log(`Loading image: ${imagePath}`); // Debugging log
+
+    // Set the image source immediately
+    chapterImageElement.src = imagePath;
+    chapterImageElement.alt = `Chapter ${chapterId} Image`;
+    chapterImageElement.style.display = 'block'; // Ensure the image is visible
+  } else {
+    console.error(`Image not found for chapter: ${chapterId}`);
+    chapterImageElement.style.display = 'none'; // Hide the image if not found
+  }
+}
+
+// Example usage: Call this function when loading a chapter
+document.addEventListener('DOMContentLoaded', () => {
+  const chapterButtons = document.querySelectorAll('.chapter-button');
+  chapterButtons.forEach(button => {
+    button.addEventListener('click', () => {
+      const chapterId = button.getAttribute('data-chapter');
+      setChapterImage(chapterId);
+    });
+  });
+});
 
 // Update AppState object
 const AppState = {
@@ -302,7 +330,7 @@ function updateChapterInfo(chapterNumber) {
       narrative: "Father Dougal hasn't been showing up to mass lately. Let's start our search at the parochial house. Maybe he's just having a lie-in?",
       arrivalText: "I'm here",
       location: { lat: 52.9719, lng: -9.4264 },
-      image: "assets/images/father-ted-house.jpg"
+      image: "assets/images/Chapters/father-ted-house.jpg" // Corrected path
     },
     "2": {
       title: "St Kevin's Stump",
@@ -310,7 +338,7 @@ function updateChapterInfo(chapterNumber) {
       narrative: "Mrs. Doyle mentioned seeing Dougal near the stump. He was looking for mushrooms... or was he looking for something else?",
       arrivalText: "I'm here",
       location: { lat: 52.9719, lng: -9.4264 },
-      image: "assets/images/stump.jpg"
+      image: "assets/images/Chapters/st-kevins-stump.jpg" // Corrected path
     },
     "3": {
       title: "Aillwee Cave",
@@ -318,7 +346,7 @@ function updateChapterInfo(chapterNumber) {
       narrative: "A local farmer saw someone matching Dougal's description entering the cave. He was carrying a torch and muttering about 'the truth being out there'...",
       arrivalText: "I'm here",
       location: { lat: 53.0719, lng: -9.3264 },
-      image: "assets/images/cave.jpg"
+      image: "assets/images/Chapters/aillwee-cave.jpg" // Corrected path
     },
     "4": {
       title: "Kilfenora Village",
@@ -326,7 +354,7 @@ function updateChapterInfo(chapterNumber) {
       narrative: "Mrs. O'Reilly mentioned seeing Dougal at the pub. He was trying to explain something about 'the Chinese' to everyone...",
       arrivalText: "I'm here",
       location: { lat: 52.9719, lng: -9.4264 },
-      image: "assets/images/kilfenora.jpg"
+      image: "assets/images/Chapters/kilfenora-village.jpg" // Corrected path
     },
     "5": {
       title: "Cliffs of Moher",
@@ -334,7 +362,7 @@ function updateChapterInfo(chapterNumber) {
       narrative: "Just got a call from Dougal! He's at Kilkelly Caravan Park, trying to convince everyone that the milkman is actually an alien. He says he's been following the trail of milk bottles across Clare...",
       arrivalText: "I'm here",
       location: { lat: 52.9719, lng: -9.4264 },
-      image: "assets/images/cliffs.jpg"
+      image: "assets/images/Chapters/cliffs-of-moher.jpg" // Corrected path
     }
   };
 
@@ -344,7 +372,7 @@ function updateChapterInfo(chapterNumber) {
     narrative: "Narrative not available",
     arrivalText: "Arrival text not available",
     location: { lat: 0, lng: 0 },
-    image: "assets/images/default.jpg"
+    image: "assets/images/Chapters/default.jpg" // Corrected default path
   };
 
   document.getElementById('chapter-number').textContent = `Chapter ${chapterNumber}`;

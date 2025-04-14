@@ -477,7 +477,7 @@ h1, h2, h3 {
     gap: 15px;
     margin: 0 0 20px 0;
     width: 100%;
-    padding: 0 20px;
+    padding: 0 0px;
     box-sizing: border-box;
 }
 
@@ -487,7 +487,7 @@ h1, h2, h3 {
     height: auto;
     border-radius: 15px;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-    margin: 20px auto;
+    margin: 10px auto;
     display: block;
 }
 
