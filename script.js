@@ -175,8 +175,8 @@ const AppState = {
         completionMessage.className = 'completion-message';
         completionMessage.innerHTML = `
           <h3>🎉 Congratulations! 🎉</h3>
-          <p>You've completed all chapters of the Father Ted Trail!</p>
-          <p>You've had your fun, and that's all that matters.</p>
+          <p>All chapters of The Craggy Island Trail are now complete! You've had your fun, and that's all that matters.</p>
+          <p>Have you figured out who the thief was?</p>
           <button class="share-button" onclick="shareApp()">Share</button>
         `;
         chapterSelectionPage.appendChild(completionMessage);
@@ -234,6 +234,9 @@ function showScreen(screenId) {
 function loadChapterData(chapterNumber) {
   console.log(`Loading chapter ${chapterNumber} data...`);
   
+  // Reset locations array to clear previous chapter data
+  locations = []; // Clear previous locations
+
   // Update chapter image
   const chapterImage = document.getElementById('chapter-image');
   if (chapterImage) {
@@ -255,9 +258,9 @@ function loadChapterData(chapterNumber) {
   // Clear existing markers and directions
   if (window.markers) {
     console.log('Clearing existing markers...');
-    window.markers.forEach(marker => marker.setMap(null));
+    window.markers.forEach(marker => marker.setMap(null)); // Remove markers from the map
   }
-  window.markers = [];
+  window.markers = []; // Reset markers array
   if (directionsRenderer) {
     directionsRenderer.setDirections({routes: []});
   }
@@ -326,40 +329,40 @@ function updateChapterInfo(chapterNumber) {
   const chapterData = {
     "1": {
       title: "Father Ted's House",
-      description: "Visit the iconic parochial house where Father Ted, Dougal, and Jack lived. Don't forget to have a nice cup of tea!",
-      narrative: "Father Dougal hasn't been showing up to mass lately. Let's start our search at the parochial house. Maybe he's just having a lie-in?",
+      description: "Visit the iconic parochial house where Father Ted, Dougal, and Jack lived.",
+      narrative: "Ted wakes up to find the Holy Stone (which was being stored very securely in a biscuit tin under Father Jack's chair) has vanished. The only remains are an empty biscuit tin, and Dougal remembers seeing a very “cool-looking priest” in the night, but also says he might have dreamed it.",
       arrivalText: "I'm here",
       location: { lat: 52.9719, lng: -9.4264 },
       image: "assets/images/Chapters/father-ted-house.jpg" // Corrected path
     },
     "2": {
       title: "St Kevin's Stump",
-      description: "Explore the mysterious stump where our favorite priests got lost picking mushrooms. Was it really haunted, or were the mushrooms... special?",
-      narrative: "Mrs. Doyle mentioned seeing Dougal near the stump. He was looking for mushrooms... or was he looking for something else?",
+      description: "St. Kevin's Stump, which was basically a tree stump, is no longer here, but you will find the Rock that Ted and Dougal climbed.",
+      narrative: "By the rock, a local man reports seeing a “young priest with an earring” listening to Oasis. Ted finds a flyer wedged in the stump for a “Pop-Up Priest Rave & Blessing Session” hosted in Aillwee Cave.",
       arrivalText: "I'm here",
       location: { lat: 52.9719, lng: -9.4264 },
       image: "assets/images/Chapters/st-kevins-stump.jpg" // Corrected path
     },
     "3": {
       title: "Aillwee Cave",
-      description: "Visit the famous cave system where Father Ted had his memorable encounter with Richard Wilson. I don't belieeeve it!",
-      narrative: "A local farmer saw someone matching Dougal's description entering the cave. He was carrying a torch and muttering about 'the truth being out there'...",
+      description: "The caves appear in the Father Ted episode 'The Mainland' under the name 'The Very Dark Caves'.",
+      narrative: "In the depths of Aillwee Cave (The Very Dark Caves), Ted and Dougal get lost (it's very dark), but Dougal finds a receipt near the entrance. Someone too badass to use a bin, perhaps?",
       arrivalText: "I'm here",
       location: { lat: 53.0719, lng: -9.3264 },
       image: "assets/images/Chapters/aillwee-cave.jpg" // Corrected path
     },
     "4": {
       title: "Kilfenora Village",
-      description: "Take a tour through Kilfenora Village, where you'll find Mrs. O'Reilly's house, Pat Mustard's milk route, and the pub where Ted met the Chinese community.",
-      narrative: "Mrs. O'Reilly mentioned seeing Dougal at the pub. He was trying to explain something about 'the Chinese' to everyone...",
+      description: "Kilfenora Village is where you'll find Mrs. O'Reilly's house, Pat Mustard's milk route, and the pub where Ted met the Chinese community.",
+      narrative: "Inside Vaughan's pub, Ted asks the bartender if he's seen the Holy Stone. The bartender shrugs: ''Yeah, a priest came in this morning with some kind of stone. Claimed it was blessed and tried to trade it for my leather jacket. He said, 'I'd rather throw it in the sea than give it back to those eejits.'''",
       arrivalText: "I'm here",
       location: { lat: 52.9719, lng: -9.4264 },
       image: "assets/images/Chapters/kilfenora-village.jpg" // Corrected path
     },
     "5": {
       title: "Cliffs of Moher",
-      description: "Experience the majestic Cliffs of Moher and Moher Tower, featured in the 'Tentacles of Doom' episode. Mind the edge!",
-      narrative: "Just got a call from Dougal! He's at Kilkelly Caravan Park, trying to convince everyone that the milkman is actually an alien. He says he's been following the trail of milk bottles across Clare...",
+      description: "Experience the Cliffs of Moher and Moher Tower, featured in the 'Tentacles of Doom' episode.",
+      narrative: "Ted and Dougal arrive breathless, but they're too late. A crowd witnessed a priest launch the stone into the crashing waves below. The priest is gone too. Something about this seems all too familiar. Bishop Brennan is calling. He wants answers. Who stole the Holy Stone of Clonrichert?",
       arrivalText: "I'm here",
       location: { lat: 52.9719, lng: -9.4264 },
       image: "assets/images/Chapters/cliffs-of-moher.jpg" // Corrected path
@@ -904,20 +907,20 @@ function testChapterLoading() {
 
 // Chapter-specific location questions
 const locationQuestions = {
-  "1": "Is this the real Father Ted's House? The very place where Mrs. Doyle made all that tea?",
-  "2": "Have you found St Kevin's Stump? The one that got Ted and Dougal lost?",
-  "3": "Are you at Aillwee Cave? The place of the famous 'I don't belieeeve it!' scene?",
-  "4": "Is this Kilfenora Village? Home of the infamous milk float incident?",
-  "5": "Are these the mighty Cliffs of Moher? Where the 'Tentacles of Doom' episode was filmed?"
+  "1": "Can you see Father Ted's House? Where Mrs. Doyle made all that tea?",
+  "2": "Can you see the rock? The one that Ted and Dougal climbed up on?",
+  "3": "Are you at the very dark caves?",
+  "4": "Can you see Vaughan's pub?",
+  "5": "Can you see the mighty Cliffs of Moher?"
 };
 
 // Chapter-specific congratulation messages
 const congratulationMessages = {
-  "1": "That's the house alright! 'Would you like a cup of tea, Father?' - Mrs. Doyle would be proud!",
-  "2": "You've found St Kevin's Stump! 'These mushrooms are a bit mad, Ted!' - Just don't eat any strange fungi...",
-  "3": "I don't belieeeve it! You've made it to Aillwee Cave! Richard Wilson would be so proud!",
-  "4": "Welcome to Kilfenora! 'The Chinese: A Great Bunch of Lads!' - Mind the milk floats and watch out for Pat Mustard!",
-  "5": "Careful now! Down with this sort of thing! You've conquered the Cliffs of Moher!"
+  "1": "One of Craggy Island's main attractions, St. Kevin's Stump, should be a good place to start looking for the culprit!",
+  "2": "Perhaps Aillwee Cave is the best place to go next.. ",
+  "3": "You're getting closer. Maybe it's best to follow the receipt to Kilfenora.",
+  "4": "You're hot on the culprit's heels! Can you get to the Cliffs of Moher on time?",
+  "5": "You've conquered the Cliffs of Moher! This should be your last stop. Have a cup of tea!"
 };
 
 // Add event listeners for navigation buttons
@@ -1045,7 +1048,22 @@ function updateSliderColors(slider, variableName) {
 
 // Add these functions near the top of the file
 function showDisclaimer() {
-  document.getElementById('disclaimer-popup').style.display = 'block';
+    const popup = document.createElement('div');
+    popup.className = 'popup-overlay';
+    popup.innerHTML = `
+        <div class="popup-content">
+            <h3>Disclaimer</h3>
+            <p>
+                This application is an independent academic project created as part of a Master's in Multimedia programme. 
+                It is not affiliated with, endorsed by, or connected to Hat Trick Productions, Channel 4, or any official 
+                rights holders of Father Ted. All references, visuals, and inspirations drawn from the series are used 
+                purely for educational and research purposes. No copyright infringement is intended, and no commercial 
+                gain is sought from this work.
+            </p>
+            <button onclick="this.parentElement.parentElement.remove()">Close</button>
+        </div>
+    `;
+    document.body.appendChild(popup);
 }
 
 function hideDisclaimer() {
@@ -1090,6 +1108,20 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
   handleBackgroundMusic('intro-screen'); // Ensure music continues on other screens
+});
+
+// Ensure the correct text is displayed on the Start Trail page
+document.addEventListener('DOMContentLoaded', () => {
+  const startPageContent = document.querySelector('.start-page-content');
+  if (startPageContent) {
+    startPageContent.innerHTML = `
+      <p class="welcome-text">
+        <strong>Welcome to The Craggy Island Trail, which will guide you to iconic Father Ted filming locations in County Clare.</strong>
+        <br><br>
+        Before you start, you should know that the Holy Stone of Clonrichert has mysteriously disappeared, and Bishop Brennan demands answers!
+      </p>
+    `;
+  }
 });
 
 // Update the DOMContentLoaded event listener
@@ -1148,3 +1180,29 @@ loadProgress();
   initializeSettings();
   testChapterLoading();
 });
+
+// Add CSS for chapter-selection-page title
+const style = document.createElement('style');
+style.textContent = `
+#chapter-selection-page h2 {
+    margin-top: 40px; /* Move the title text lower */
+    text-align: center;
+    color: #2c3e50; /* Keep the text dark */
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.2); /* Add subtle drop shadow */
+}
+`;
+document.head.appendChild(style);
+
+// Function to show text size help
+function showTextSizeHelp() {
+    const popup = document.createElement('div');
+    popup.className = 'popup-overlay';
+    popup.innerHTML = `
+        <div class="popup-content">
+            <h3>Text Size Help</h3>
+            <p>Adjusting the text size allows you to make the text larger or smaller for better readability. Use the slider to find the size that works best for you.</p>
+            <button onclick="this.parentElement.parentElement.remove()">Close</button>
+        </div>
+    `;
+    document.body.appendChild(popup);
+}

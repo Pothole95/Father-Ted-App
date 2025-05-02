@@ -30,6 +30,10 @@
         filter: drop-shadow(2px 2px 2px rgba(0, 0, 0, 0.3));
         z-index: 2;
     }
+
+    #start-trail-button {
+        margin-top: 20px; /* Move button outside the box */
+    }
   </style>
 </head>
 <body>
@@ -42,22 +46,25 @@
       </div>
       <div class="intro-footer">
         <p>Created by Shayne Fogarty</p>
-        <p>A Thesis Project for University of Porto</p>
+        <p>Master in Multimedia (MM) 2025</p>
+        <p>University of Porto</p>
         <p><a href="mailto:up202302222@up.pt">up202302222@up.pt</a></p>
       </div>
     </div>
 
     <!-- Start Page -->
     <div id="start-page" class="screen">
-      <div class="start-page-content">
-        <div class="welcome-text">
-          Welcome to the ultimate Father Ted tour, where you'll visit iconic filming locations in the heart of County Clare. This is your chance to step into Craggy Island… well, sort of!
-        </div>
-        <button id="start-trail-button">Start Trail</button>
-      </div>
       <div class="button-group">
-        <button id="settings-button">Settings</button>
+        <button id="settings-button">Settings</button> <!-- Move Settings button to the top-right -->
       </div>
+      <div class="start-page-content">
+        <p class="welcome-text">
+          Welcome to The Craggy Island Trail, which will guide you to iconic Father Ted filming locations in County Clare.
+          <br><br>
+          Before you start, you should know that the Holy Stone of Clonrichert has mysteriously disappeared, and Bishop Brennan demands answers!
+        </p>
+      </div>
+      <button id="start-trail-button">Start Trail</button>
     </div>
 
     <!-- Chapter Selection Page -->
@@ -162,6 +169,7 @@
         <div class="settings-group">
           <label for="text-size">Text Size</label>
           <input type="range" id="text-size" min="12" max="24" step="1" value="16">
+          <button id="text-size-help" onclick="showDisclaimer()">View Disclaimer</button>
         </div>
       </div>
     </div>
