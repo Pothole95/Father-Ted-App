@@ -55,16 +55,81 @@
     <!-- Start Page -->
     <div id="start-page" class="screen">
       <div class="button-group">
-        <button id="settings-button">Settings</button> <!-- Move Settings button to the top-right -->
+        <button id="back-button">Back</button>
+        <button id="settings-button">Settings</button>
       </div>
       <div class="start-page-content">
         <p class="welcome-text">
-          Welcome to The Craggy Island Trail, which will guide you to iconic Father Ted filming locations in County Clare.
+          <strong>Welcome to The Craggy Island Trail, which will guide you to iconic Father Ted filming locations in County Clare.</strong>
           <br><br>
           Before you start, you should know that the Holy Stone of Clonrichert has mysteriously disappeared, and Bishop Brennan demands answers!
         </p>
       </div>
       <button id="start-trail-button">Start Trail</button>
+    </div>
+
+    <!-- Transportation Page -->
+    <div id="transportation-page" class="screen" style="background-image: url('assets/images/settings-background.jpg');">
+        <div class="button-group">
+            <button id="back-button">Back</button>
+            <button id="settings-button">Settings</button>
+        </div>
+        <div class="transportation-content">
+            <h1 class="transportation-title">Choose Your Journey</h1>
+            <p class="welcome-text">
+                Welcome to The Craggy Island Trail, which will guide you to iconic Father Ted filming locations in County Clare.
+                <br><br>
+                Explore the trail by bicycle or by car. The cycle trail is perfect for those who want to take their time and enjoy the beautiful Irish countryside, while the car trail offers a quicker way to visit all the locations.
+            </p>
+            <div class="transport-buttons">
+                <button class="transport-button cycle-trail" onclick="showScreen('cycle-start-page')">
+                    <span class="button-title">Cycle Trail</span>
+                    <span class="button-duration">Estimated Time: 3 Days</span>
+                </button>
+                <button class="transport-button car-trail" onclick="showScreen('car-start-page')">
+                    <span class="button-title">By Car</span>
+                    <span class="button-duration">Estimated Time: 6 Hours</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Cycle Start Page -->
+    <div id="cycle-start-page" class="screen">
+        <div class="button-group">
+            <button id="back-button">Back</button>
+            <button id="settings-button">Settings</button>
+        </div>
+        <div class="start-page-content">
+            <p class="welcome-text">
+                <strong>Welcome to The Craggy Island Cycle Trail!</strong>
+                <br><br>
+                Before you start your cycling adventure, you should know that the Holy Stone of Clonrichert has mysteriously disappeared, and Bishop Brennan demands answers!
+                <br><br>
+                This trail is designed for cyclists, with carefully planned routes and rest stops along the way.
+            </p>
+            <button id="start-trail-button" class="start-button" onclick="showScreen('chapter-selection-page')">
+                Start Cycling Trail
+            </button>
+        </div>
+    </div>
+
+    <!-- Car Start Page -->
+    <div id="car-start-page" class="screen">
+        <div class="button-group">
+            <button id="back-button">Back</button>
+            <button id="settings-button">Settings</button>
+        </div>
+        <div class="start-page-content">
+            <p class="welcome-text">
+                <strong>Welcome to The Craggy Island Trail!</strong>
+                <br><br>
+                Before you start, you should know that the Holy Stone of Clonrichert has mysteriously disappeared, and Bishop Brennan demands answers!
+            </p>
+            <button id="start-trail-button" class="start-button" onclick="showScreen('chapter-selection-page')">
+                Start Trail
+            </button>
+        </div>
     </div>
 
     <!-- Chapter Selection Page -->
@@ -73,7 +138,7 @@
         <button id="back-button">Back</button>
         <button id="settings-button">Settings</button>
       </div>
-      <h2>Select a Chapter</h2>
+      <h2>Start a Chapter</h2>
       <div class="progress-bar">
         <div class="progress-fill"></div>
         <img src="assets/icons/caravan.png" alt="Caravan Icon" class="caravan-icon">
@@ -137,8 +202,8 @@
         <div class="narrative-text" id="chapter-narrative"></div>
         <div id="map"></div>
         <div class="location-buttons">
-          <button id="get-directions">Get Directions</button>
-          <button id="im-here">I'm Here</button>
+          <button id="get-directions">Directions</button>
+          <button id="im-here">I've Arrived</button>
         </div>
       </div>
     </div>
@@ -169,6 +234,7 @@
         <div class="settings-group">
           <label for="text-size">Text Size</label>
           <input type="range" id="text-size" min="12" max="24" step="1" value="16">
+          <button id="reset-trail-button" onclick="resetTrail()">Reset Trail</button>
           <button id="text-size-help" onclick="showDisclaimer()">View Disclaimer</button>
         </div>
       </div>

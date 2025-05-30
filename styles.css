@@ -1,12 +1,12 @@
 /* Father Ted specific styles */
-@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&family=Irish+Grover&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&family=Irish+Grover&family=Open+Sans:wght@400;600&display=swap');
 
 :root {
   --base-font-size: 16px;
 }
 
 body {
-    font-family: 'Roboto', sans-serif;
+    font-family: 'Open Sans', sans-serif;
     margin: 0;
     padding: 0;
     background: linear-gradient(135deg, #87CEEB, #1E88E5, #1565C0);
@@ -22,7 +22,7 @@ body {
     width: 100%;
     max-width: 400px;
     height: 100vh;
-    background: #ffffff;
+    background: transparent;
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
     position: relative;
     border-radius: 20px;
@@ -45,10 +45,11 @@ body {
     left: 0;
     box-sizing: border-box;
     overflow-y: auto;
-    background: #ffffff;
+    background: transparent;
     opacity: 0;
-    transition: opacity 0.3s ease;
+    transition: opacity 0.3s ease-in-out;
     z-index: 1;
+    background-color: #fff;
 }
   
 .screen.active {
@@ -87,8 +88,10 @@ h3 {
 .chapter-content {
     flex-grow: 1;
     display: flex;
-    align-items: center;
-    gap: 12px;
+    flex-direction: column;
+    gap: 4px;
+    text-align: left;
+    padding: 8px;
 }
   
 .chapter-title {
@@ -100,13 +103,48 @@ h3 {
 }
   
 .chapter-description {
-    display: none;
+    margin-bottom: 4px;
+    padding: 8px;
+    background: rgba(255, 255, 255, 0.7);
+    border-radius: 10px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+  
+.chapter-description p {
+    margin: 0 0 10px 0;
+}
+  
+.chapter-info {
+    margin-top: 4px;
+    font-size: 0.9em;
+    color: #666;
+}
+  
+.chapter-info .distance,
+.chapter-info .duration,
+.chapter-info .difficulty {
+    display: inline-block;
+    padding: 1px 6px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 4px;
+    font-size: 0.85em;
+    color: rgba(255, 255, 255, 0.9);
+}
+  
+.chapter-info .difficulty {
+    color: #ffd700;
+}
+
+/* Add orange color for Moderate and Hard difficulties */
+.chapter-info .difficulty[data-difficulty="Moderate"],
+.chapter-info .difficulty[data-difficulty="Hard"] {
+    color: #D35400 !important; /* Darker orange color */
 }
   
 .chapter-button {
     width: 90%;
-    padding: 16px 20px;
-    margin: 8px auto;
+    padding: 12px 16px;
+    margin: 4px auto;
     border-radius: 12px;
     font-size: 16px;
     background: linear-gradient(145deg, #2196F3, #1976D2, #1565C0);
@@ -118,7 +156,7 @@ h3 {
     position: relative;
     text-align: left;
     display: flex;
-    align-items: center;
+    align-items: flex-start;
     justify-content: space-between;
 }
   
@@ -134,6 +172,14 @@ h3 {
     opacity: 0;
     transition: opacity 0.3s ease;
     margin-left: 12px;
+}
+  
+.chapter-button.started {
+    background: linear-gradient(145deg, #FFA500, #FF8C00, #FF7F00);
+}
+  
+.chapter-button.started:hover {
+    background: linear-gradient(145deg, #FF8C00, #FF7F00, #FF6F00);
 }
   
 .chapter-button.completed {
@@ -168,21 +214,31 @@ h3 {
     border-radius: 10px;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
     margin-top: 20px;
+    margin-bottom: 100px;
 }
   
 .button-group {
-    display: flex;
+    display: flex !important;
     justify-content: space-between;
-    gap: 40px;
+    gap: 30px;
     position: fixed;
-    top: 20px;
-    width: 280px;
+    top: 6px;
+    left: 41%;
+    transform: translateX(-50%);
+    width: 290px;
     z-index: 1000;
     background: transparent;
     padding: 0;
-    pointer-events: none;
-    left: 50%;
-    transform: translateX(-50%);
+}
+  
+#settings-button {
+    order: 2;
+    margin-left: auto;
+}
+  
+#back-button {
+    order: 1;
+    margin-right: auto;
 }
   
 #settings-button, #back-button {
@@ -195,7 +251,6 @@ h3 {
     backdrop-filter: blur(8px);
     color: white;
     cursor: pointer;
-    pointer-events: auto;
     box-shadow: 0 2px 4px rgba(0,0,0,0.2);
     min-width: 90px;
     display: flex !important;
@@ -205,6 +260,10 @@ h3 {
   
 #back-button {
     background: rgba(127, 140, 141, 0.9);
+}
+  
+#settings-button:hover, #back-button:hover {
+    opacity: 0.9;
 }
   
 .progress-bar {
@@ -240,22 +299,42 @@ h3 {
 #start-page {
     display: flex;
     flex-direction: column;
-    justify-content: center;
+    justify-content: flex-start;
     align-items: center;
-    height: 100%;
-    background-image: url('assets/images/start-background.jpg'); /* Corrected path */
+    padding: 20px 20px 20px 20px;
+    background-image: url('assets/images/start-background.jpg');
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;
-    color: white; /* Ensure all text is white */
+    color: white;
+}
+
+#start-page h2 {
+    color: #2c3e50;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.2);
+    margin: 0 auto 30px auto;
+    text-align: center;
+    font-size: calc(var(--base-font-size) * 1.75);
 }
 
 .start-page-content {
-    color: #2c3e50; /* Dark text */
+    color: #2c3e50;
     text-align: center;
-    max-width: 90%; /* Restrict width */
-    margin: auto; /* Center the text block */
-    margin-top: 130px; /* Lower the text vertically */
+    max-width: 90%;
+    margin: 0 auto;
+    margin-top: 60px;
+}
+
+.start-page-content .welcome-text {
+    font-family: 'Open Sans', sans-serif;
+    font-size: calc(var(--base-font-size) * 1);
+    line-height: 1.6;
+    color: #2c3e50;
+    margin: 20px 0;
+    padding: 15px;
+    background: rgba(255, 255, 255, 0.7);
+    border-radius: 10px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 #start-trail-button {
@@ -377,18 +456,15 @@ h3 {
 }
 
 .welcome-text {
-    font-family: 'Irish Grover', cursive;
-    font-size: calc(var(--base-font-size) * 1.125);
-    line-height: 1.5;
-    color: #2c3e50; /* Dark text */
-    background: rgba(255, 255, 255, 0.6); /* Low-opacity background */
-    padding: 20px 20px; /* Reduce padding */
-    border-radius: 10px; /* Smaller rounded corners */
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Add subtle shadow */
-    text-align: center;
-    max-width: 95%; /* Restrict width */
-    margin: 0 auto; /* Center the text block */
-    margin-bottom: 20px;
+    font-family: 'Open Sans', sans-serif;
+    font-size: calc(var(--base-font-size) * 1);
+    line-height: 1.6;
+    color: #2c3e50;
+    margin: 20px 0;
+    padding: 15px;
+    background: rgba(255, 255, 255, 0.7);
+    border-radius: 10px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .completion-message {
@@ -449,10 +525,6 @@ h1, h2, h3 {
     font-family: 'Irish Grover', cursive;
 }
 
-#settings-button:hover, #back-button:hover {
-    opacity: 0.9;
-}
-
 #chapter-list {
     width: 100%;
     overflow-y: auto;
@@ -463,6 +535,7 @@ h1, h2, h3 {
     flex-direction: column;
     gap: 4px;
     padding-bottom: 60px;
+    margin-top: 20px;
 }
 
 .chapter-content-wrapper {
@@ -503,80 +576,87 @@ h1, h2, h3 {
 }
 
 #chapter-page {
-    padding: 40; /* Remove padding */
-    margin: 40; /* Remove margin */
+    padding: 80px 10px 10px 10px;
+    margin: 0;
     position: auto;
-    width: cover; /* Ensure the width covers the full viewport */
-    height: cover; /* Ensure it covers the full viewport height */
+    width: cover;
+    height: cover;
     overflow-y: 100%;
-    background-image: url('assets/images/chapter-background.jpg'); /* Corrected path */
-    background-size: 120%; /* Display at natural size */
-    background-position: center; /* Center the image */
-    background-repeat: no-repeat; /* Prevent tiling */
-    background-attachment: auto; /* Ensure it stays fixed */
+    background-image: url('assets/images/chapter-background.jpg');
+    background-size: 120%;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-attachment: auto;
 }
 
-#chapter-number,
+#chapter-number {
+    margin-top: 0;
+    color: #2c3e50;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);
+    text-align: center;
+    line-height: 1.4;
+}
+
 #chapter-title,
 #chapter-description {
     color: #2c3e50; /* Dark text */
     text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1); /* Subtle drop shadow */
-    margin: 10px auto; /* Adjust spacing */
+    margin: 4px 0; /* Adjust spacing */
     text-align: center;
     line-height: 1.4; /* Adjust line height */
 }
 
-#chapter-number {
-    margin-top: 70px; /* Move Chapter number lower */
-}
-
 .location-buttons {
-    display: flex;
-    gap: 12px;
-    justify-content: center;
-    align-items: center;
-    width: 100%;
-    max-width: 300px;
-    padding: 15px;
-    box-sizing: border-box;
     position: fixed;
-    bottom: 20px;
+    bottom: 0px;
     left: 50%;
     transform: translateX(-50%);
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
     z-index: 1000;
 }
 
 #get-directions, #im-here {
-    flex: 1;
-    max-width: 140px;
-    height: 48px;
+    position: fixed;
+    bottom: 20px;
+    width: 160px;
+    height: 50px;
+    padding: 0 24px;
+    font-size: 16px;
+    border-radius: 24px;
+    color: white;
+    border: none;
+    cursor: pointer;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    transition: transform 0.2s, box-shadow 0.2s;
+    z-index: 1000;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 16px;
-    font-weight: bold;
-    color: white;
-    border: none;
-    border-radius: 24px;
-    cursor: pointer;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-    transition: all 0.3s ease;
-    padding: 0 16px;
-    margin: 0;
-    backdrop-filter: blur(8px);
 }
 
 #get-directions {
-    background: linear-gradient(145deg, #4CAF50, #45a049);
+    left: calc(50% - 172px);
+    background: linear-gradient(135deg, #4CAF50, #45a049);
 }
 
 #im-here {
-    background: linear-gradient(145deg, #2196F3, #1976D2);
+    left: calc(50% + 12px);
+    background: linear-gradient(135deg, #2196F3, #1976D2);
 }
 
 #get-directions:hover, #im-here:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.3);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+}
+
+#get-directions:hover {
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+}
+
+#im-here:hover {
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
 }
 
 .popup-overlay {
@@ -593,23 +673,26 @@ h1, h2, h3 {
 }
 
 .popup-content {
+    font-family: 'Open Sans', sans-serif;
     background: white;
     padding: 20px;
     border-radius: 10px;
-    text-align: center;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    max-width: 90%;
+    width: 300px;
+    text-align: center;
 }
 
 .popup-content h3 {
-    margin-bottom: 10px;
+    font-family: 'Irish Grover', cursive;
+    margin: 0 0 15px 0;
     color: #2c3e50;
 }
 
 .popup-content p {
-    margin-bottom: 20px;
-    color: #2c3e50;
-    font-size: 14px;
+    margin: 0 0 20px 0;
     line-height: 1.6;
+    color: #2c3e50;
 }
 
 .popup-content button {
@@ -667,15 +750,16 @@ h1, h2, h3 {
 #chapter-selection-page {
     display: flex;
     flex-direction: column;
-    justify-content: center;
+    justify-content: flex-start;
     align-items: center;
-    padding-top: 60px;
+    padding-top: 80px;
     height: 100%;
-    background-image: url('assets/images/trail-selection-background.jpg'); /* Corrected path */
+    background-image: url('assets/images/trail-selection-background.jpg');
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;
-    color: white; /* Ensure all text is white */
+    color: white;
+    overflow-y: auto;
 }
 
 #chapter-selection-page h2 {
@@ -700,11 +784,11 @@ h1, h2, h3 {
     align-items: center;
     height: 100%;
     padding: 60px 20px 20px 20px;
-    background-image: url('assets/images/settings-background.jpg'); /* Corrected path */
+    background-image: url('assets/images/settings-background.jpg');
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;
-    color: white; /* Ensure all text is white */
+    color: white;
 }
 
 .settings-container {
@@ -863,22 +947,15 @@ h1, h2, h3 {
 }
 
 .narrative-text {
-    font-family: 'Irish Grover', cursive;
-    font-size: calc(var(--base-font-size) * 1.125);
+    font-family: 'Open Sans', sans-serif;
+    font-size: calc(var(--base-font-size) * 1);
     line-height: 1.6;
-    color: #2c3e50; /* Keep text dark/black */
+    color: #2c3e50;
     margin: 20px 0;
-    padding: 20px;
-    background: linear-gradient(145deg, rgba(255, 255, 255, 0.95), rgba(255, 255, 255, 0.9));
-    border-radius: 20px;
-    border: 3px solid #4CAF50;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1),
-                0 0 0 2px rgba(76, 175, 80, 0.1);
-    text-align: center;
-    max-width: 90%;
-    margin-left: auto;
-    margin-right: auto;
-    position: relative;
+    padding: 15px;
+    background: rgba(255, 255, 255, 0.7);
+    border-radius: 10px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .narrative-text:hover {
@@ -902,7 +979,62 @@ h1, h2, h3 {
     font-size: calc(var(--base-font-size) * 1);
     line-height: 1.5;
     color: #2c3e50; /* Black text */
-    margin: 10px 0 20px 0;
+    margin: 4px 0;
+    padding-top: 8px;
+}
+
+#chapter-description p {
+    margin: 0 0 10px 0;
+}
+
+#chapter-page .chapter-info {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255, 255, 255, 0.9);
+    padding: 15px;
+    border-radius: 10px;
+    margin: 10px auto;
+    max-width: 300px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+#chapter-page .chapter-info .distance,
+#chapter-page .chapter-info .duration,
+#chapter-page .chapter-info .difficulty {
+    color: #2c3e50;
+    font-size: 1em;
+    margin: 5px 0;
+    text-align: center;
+    font-weight: 500;
+}
+
+/* Hide duration for Chapter 1 */
+#chapter-page[data-chapter="1"] .chapter-info .duration {
+    display: none;
+}
+
+/* Keep original styles for chapter selection page */
+.chapter-info {
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: 2px;
+}
+
+.chapter-info .distance,
+.chapter-info .duration,
+.chapter-info .difficulty {
+    display: inline-block;
+    padding: 1px 6px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 4px;
+    font-size: 0.85em;
+    color: rgba(255, 255, 255, 0.9);
+}
+
+.chapter-info .difficulty {
+    color: #ffd700;
 }
 
 /* Logo and Icons */
@@ -971,4 +1103,505 @@ h1, h2, h3 {
 
 #text-size-help:hover {
     background: linear-gradient(145deg, #B22222, #8B0000); /* Darker red on hover */
+}
+
+/* Transportation Page Styles */
+.transportation-page {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: center;
+    height: 100%;
+    padding: 60px 20px 20px 20px;
+    background-image: url('assets/images/settings-background.jpg');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    color: white;
+    position: relative;
+}
+
+/* Match the global button group styles */
+.transportation-page .button-group {
+    display: flex !important;
+    justify-content: space-between;
+    gap: 40px;
+    position: fixed;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 280px;
+    z-index: 1000;
+    background: transparent;
+    padding: 0;
+}
+
+.transportation-page #settings-button {
+    order: 2;
+    margin-left: auto;
+}
+
+.transportation-page #back-button {
+    order: 1;
+    margin-right: auto;
+}
+
+.transportation-page #settings-button,
+.transportation-page #back-button {
+    padding: 10px 24px;
+    font-size: 14px;
+    border-radius: 8px;
+    border: none;
+    background: linear-gradient(145deg, rgba(52, 73, 94, 0.95), rgba(44, 62, 80, 0.95));
+    color: white;
+    cursor: pointer;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    min-width: 90px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.transportation-page #back-button {
+    background: rgba(127, 140, 141, 0.9);
+}
+
+.transportation-content {
+    margin-top: 60px;
+}
+
+.transportation-title {
+    font-size: 2em;
+    color: #2c3e50;
+    margin: 0 0 30px 0;
+    text-align: center;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.transport-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    width: 100%;
+    max-width: 300px;
+    margin: 0 auto;
+    position: relative;
+    z-index: 1;
+}
+
+.transport-button {
+    padding: 15px 30px;
+    font-size: 1.2em;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.9) 0%, rgba(245, 245, 245, 0.9) 100%);
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    color: #2c3e50;
+    text-align: center;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    backdrop-filter: blur(5px);
+}
+
+.button-title {
+    font-size: 1.2em;
+    font-weight: bold;
+}
+
+.button-duration {
+    font-size: 0.9em;
+    opacity: 0.8;
+}
+
+.transport-button.cycle-trail {
+    background: linear-gradient(135deg, rgba(76, 175, 80, 0.9) 0%, rgba(69, 160, 73, 0.9) 100%);
+    color: white;
+}
+
+.transport-button.car-trail {
+    background: linear-gradient(135deg, rgba(33, 150, 243, 0.9) 0%, rgba(25, 118, 210, 0.9) 100%);
+    color: white;
+}
+
+.transport-button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 8px rgba(0, 0, 0, 0.15);
+}
+
+.transportation-page .welcome-text {
+    margin-bottom: 40px;
+    color: #2c3e50;
+    font-size: 1.1em;
+    line-height: 1.5;
+    background: rgba(255, 255, 255, 0.9);
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Settings slider styles */
+.settings-control {
+    margin: 20px 0;
+    width: 100%;
+}
+
+.settings-control label {
+    display: block;
+    margin-bottom: 10px;
+    color: #2c3e50;
+}
+
+.settings-control input[type="range"] {
+    width: 100%;
+    height: 8px;
+    -webkit-appearance: none;
+    background: linear-gradient(to right, #4CAF50 0%, #4CAF50 var(--volume-value, 50%), #ddd var(--volume-value, 50%), #ddd 100%);
+    border-radius: 4px;
+    outline: none;
+}
+
+.settings-control input[type="range"]#text-size {
+    background: linear-gradient(to right, #2196F3 0%, #2196F3 var(--text-size-value, 50%), #ddd var(--text-size-value, 50%), #ddd 100%);
+}
+
+.settings-control input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 20px;
+    height: 20px;
+    background: #4CAF50;
+    border-radius: 50%;
+    cursor: pointer;
+    border: 2px solid white;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.settings-control input[type="range"]#text-size::-webkit-slider-thumb {
+    background: #2196F3;
+}
+
+.settings-control input[type="range"]::-moz-range-thumb {
+    width: 20px;
+    height: 20px;
+    background: #4CAF50;
+    border-radius: 50%;
+    cursor: pointer;
+    border: 2px solid white;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.settings-control input[type="range"]#text-size::-moz-range-thumb {
+    background: #2196F3;
+}
+
+/* Start Trail page header buttons */
+.start-page-header {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    right: 20px;
+    display: flex;
+    justify-content: space-between;
+    z-index: 1000;
+}
+
+.start-page-header button {
+    padding: 8px 15px;
+    border: none;
+    border-radius: 5px;
+    background: rgba(255, 255, 255, 0.9);
+    color: #2c3e50;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+/* Make chapter info text (duration, difficulty, etc.) black and easy to see */
+.chapter-info,
+.chapter-info * {
+    color: #111 !important;
+    font-weight: 600;
+    text-shadow: 0 1px 2px rgba(255,255,255,0.15);
+}
+
+.start-page-header button:hover {
+    background: rgba(255, 255, 255, 1);
+    transform: translateY(-2px);
+}
+
+/* Ensure each screen maintains its background during transitions */
+#intro-screen,
+#transportation-page,
+#start-page,
+#cycle-start-page,
+#car-start-page,
+#chapter-selection-page,
+#chapter-page,
+#arrival-page,
+#settings-page {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  transition: opacity 0.3s ease-in-out;
+}
+
+/* Ensure content stays above background */
+.screen-content {
+  position: relative;
+  z-index: 2;
+}
+
+/* Ensure buttons stay above background */
+.button-group {
+  position: relative;
+  z-index: 2;
+}
+
+/* Remove any conflicting button group styles */
+.transportation-page .button-group,
+#start-page .button-group,
+#chapter-selection-page .button-group,
+#chapter-page .button-group,
+#arrival-page .button-group,
+#settings-page .button-group {
+    position: fixed;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 280px;
+    z-index: 1000;
+}
+
+.trail-map {
+    width: 300px;
+    height: 300px;
+    object-fit: cover;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    margin: 0 auto 30px auto;
+    display: block;
+}
+
+.start-page-content h2 {
+    color: #2c3e50;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.2);
+    margin: 0 auto 30px auto;
+    text-align: center;
+    font-size: calc(var(--base-font-size) * 1.75);
+}
+
+.start-page-content .welcome-text {
+    font-family: 'Open Sans', sans-serif;
+    font-size: calc(var(--base-font-size) * 1);
+    line-height: 1.6;
+    color: #2c3e50;
+    margin: 20px 0;
+    padding: 15px;
+    background: rgba(255, 255, 255, 0.7);
+    border-radius: 10px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.trail-map {
+    width: 300px;
+    height: 300px;
+    object-fit: cover;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    margin: 0 auto 30px auto;
+    display: block;
+}
+
+.chapter-info {
+  margin-top: 8px;
+  font-size: 0.85em;
+  color: rgba(255, 255, 255, 0.9);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.chapter-info .distance,
+.chapter-info .duration,
+.chapter-info .difficulty {
+  display: inline-block;
+  padding: 2px 8px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 4px;
+  margin-right: 6px;
+}
+
+.chapter-info .difficulty {
+  color: #ffd700;
+}
+
+#chapter-page .chapter-info {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255, 255, 255, 0.9);
+    padding: 15px;
+    border-radius: 10px;
+    margin: 10px auto;
+    max-width: 300px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+#chapter-page .chapter-info .distance,
+#chapter-page .chapter-info .duration,
+#chapter-page .chapter-info .difficulty {
+    color: #2c3e50;
+    font-size: 1em;
+    margin: 5px 0;
+    text-align: center;
+    font-weight: 500;
+}
+
+/* Hide duration for Chapter 1 */
+#chapter-page[data-chapter="1"] .chapter-info .duration {
+    display: none;
+}
+
+/* Keep original styles for chapter selection page */
+.chapter-info {
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: 2px;
+}
+
+.chapter-info .distance,
+.chapter-info .duration,
+.chapter-info .difficulty {
+    display: inline-block;
+    padding: 1px 6px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 4px;
+    font-size: 0.85em;
+    color: rgba(255, 255, 255, 0.9);
+}
+
+.chapter-info .difficulty {
+    color: #ffd700;
+}
+
+#reset-trail-button {
+    background-color: #8B5CF6;
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    margin: 10px 0;
+    transition: background-color 0.3s;
+}
+
+#reset-trail-button:hover {
+    background-color: #7C3AED;
+}
+
+/* Amenities Section Styles */
+.amenities-section {
+    margin: 4px 0;
+    padding: 8px;
+    background: rgba(255, 255, 255, 0.7);
+    border-radius: 10px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.amenities-header {
+    font-size: 1.1em;
+    font-weight: bold;
+    margin-bottom: 4px;
+    color: #2c3e50;
+}
+
+.amenities-category {
+    margin-bottom: 4px;
+}
+
+.category-header {
+    padding: 4px;
+    background: rgba(76, 175, 80, 0.1);
+    border-radius: 5px;
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.category-content {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.3s ease-out;
+    padding: 0 4px;
+}
+
+.category-content.active {
+    max-height: 500px;
+    padding: 4px;
+}
+
+.amenity-item {
+    margin: 4px 0;
+    padding: 4px;
+    background: rgba(255, 255, 255, 0.5);
+    border-radius: 5px;
+}
+
+.amenity-name {
+    font-weight: bold;
+    margin-bottom: 4px;
+}
+
+.amenity-name a {
+    color: #2c3e50;
+    text-decoration: none;
+    transition: color 0.2s;
+}
+
+.amenity-name a:hover {
+    color: #4CAF50;
+}
+
+.amenity-description {
+    font-size: 0.9em;
+    color: #666;
+}
+
+#chapter-image {
+    margin: 4px 0;
+    max-width: 100%;
+    border-radius: 10px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.chapter-narrative {
+    margin-top: 4px;
+    padding: 8px;
+    background: rgba(255, 255, 255, 0.7);
+    border-radius: 10px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.chapter-narrative h3 {
+    margin-top: 0;
+    margin-bottom: 4px;
+    color: #2c3e50;
+}
+
+#map {
+    margin-top: 4px;
+    height: 300px;
+    border-radius: 10px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
