@@ -132,29 +132,44 @@ document.addEventListener('DOMContentLoaded', () => {
 
 // Update AppState object
 const AppState = {
-  completedChapters: new Set(),
-  progress: 0,
+  completedChapters: {
+    cycle: new Set(),
+    car: new Set()
+  },
+  progress: {
+    cycle: 0,
+    car: 0
+  },
   
   init() {
     console.log('Initializing AppState...');
-    this.completedChapters.clear();
-    this.progress = 0;
+    this.completedChapters.cycle.clear();
+    this.completedChapters.car.clear();
+    this.progress.cycle = 0;
+    this.progress.car = 0;
     
     try {
       const saved = localStorage.getItem('appState');
       if (saved) {
         const state = JSON.parse(saved);
-        this.completedChapters = new Set(state.completedChapters.map(String));
-        this.progress = Math.min(100, this.completedChapters.size * 20);
+        this.completedChapters.cycle = new Set(state.completedChapters.cycle.map(String));
+        this.completedChapters.car = new Set(state.completedChapters.car.map(String));
+        this.progress.cycle = Math.min(100, this.completedChapters.cycle.size * 20);
+        this.progress.car = Math.min(100, this.completedChapters.car.size * 20);
         console.log('Loaded state:', { 
-          completedChapters: Array.from(this.completedChapters), 
-          progress: this.progress 
+          completedChapters: {
+            cycle: Array.from(this.completedChapters.cycle),
+            car: Array.from(this.completedChapters.car)
+          },
+          progress: this.progress
         });
       }
     } catch (e) {
       console.error('Error loading state:', e);
-      this.completedChapters = new Set();
-      this.progress = 0;
+      this.completedChapters.cycle = new Set();
+      this.completedChapters.car = new Set();
+      this.progress.cycle = 0;
+      this.progress.car = 0;
     }
     
     this.updateUI();
@@ -162,13 +177,19 @@ const AppState = {
   
   save() {
     console.log('Saving state...', { 
-      completedChapters: Array.from(this.completedChapters), 
-      progress: this.progress 
+      completedChapters: {
+        cycle: Array.from(this.completedChapters.cycle),
+        car: Array.from(this.completedChapters.car)
+      },
+      progress: this.progress
     });
     
     try {
       localStorage.setItem('appState', JSON.stringify({
-        completedChapters: Array.from(this.completedChapters),
+        completedChapters: {
+          cycle: Array.from(this.completedChapters.cycle),
+          car: Array.from(this.completedChapters.car)
+        },
         progress: this.progress
       }));
     } catch (e) {
@@ -183,11 +204,15 @@ const AppState = {
     const chapterStr = chapterNum.toString();
     console.log('Marking chapter as completed:', chapterStr);
     
-    // Add to completed chapters
-    this.completedChapters.add(chapterStr);
+    // Determine current trail type
+    const isBikeMode = document.querySelector('.transport-button.cycle-trail') !== null;
+    const trailType = isBikeMode ? 'cycle' : 'car';
     
-    // Update progress
-    this.progress = Math.min(100, this.completedChapters.size * 20);
+    // Add to completed chapters for current trail type
+    this.completedChapters[trailType].add(chapterStr);
+    
+    // Update progress for current trail type
+    this.progress[trailType] = Math.min(100, this.completedChapters[trailType].size * 20);
     console.log('New progress:', this.progress);
     
     // Save state immediately
@@ -198,17 +223,25 @@ const AppState = {
     
     // Log current state for debugging
     console.log('Current state after completion:', {
-      completedChapters: Array.from(this.completedChapters),
+      completedChapters: {
+        cycle: Array.from(this.completedChapters.cycle),
+        car: Array.from(this.completedChapters.car)
+      },
       progress: this.progress
     });
   },
   
   isChapterCompleted(chapterNum) {
-    return this.completedChapters.has(chapterNum);
+    const isBikeMode = document.querySelector('.transport-button.cycle-trail') !== null;
+    const trailType = isBikeMode ? 'cycle' : 'car';
+    return this.completedChapters[trailType].has(chapterNum);
   },
   
   updateUI() {
-    console.log('Updating UI with progress:', this.progress);
+    const isBikeMode = document.querySelector('.transport-button.cycle-trail') !== null;
+    const currentProgress = isBikeMode ? this.progress.cycle : this.progress.car;
+    
+    console.log('Updating UI with progress:', currentProgress);
     
     // Update progress bar and text
     const progressFill = document.querySelector(".progress-fill");
@@ -216,13 +249,13 @@ const AppState = {
     const caravanIcon = document.querySelector(".caravan-icon");
     
     if (progressFill) {
-      progressFill.style.width = `${this.progress}%`;
+      progressFill.style.width = `${currentProgress}%`;
       // Update color based on progress
-      if (this.progress <= 20) {
+      if (currentProgress <= 20) {
         progressFill.style.background = "linear-gradient(90deg, #ff5252, #f44336, #d32f2f)"; // Red
-      } else if (this.progress <= 40) {
+      } else if (currentProgress <= 40) {
         progressFill.style.background = "linear-gradient(90deg, #ffa726, #fb8c00, #f57c00)"; // Orange
-      } else if (this.progress <= 60) {
+      } else if (currentProgress <= 60) {
         progressFill.style.background = "linear-gradient(90deg, #ffeb3b, #fdd835, #fbc02d)"; // Yellow
       } else {
         progressFill.style.background = "linear-gradient(90deg, #4CAF50, #43A047, #388E3C)"; // Green
@@ -230,31 +263,34 @@ const AppState = {
       
       // Update caravan position
       if (caravanIcon) {
-        caravanIcon.style.left = `${this.progress}%`;
+        caravanIcon.style.left = `${currentProgress}%`;
       }
     }
     
     if (progressText) {
-      progressText.textContent = `${this.progress}%`;
-      progressText.style.color = this.progress >= 50 ? '#fff' : '#2c3e50';
+      progressText.textContent = `${currentProgress}%`;
+      progressText.style.color = currentProgress >= 50 ? '#fff' : '#2c3e50';
     }
     
     // Update chapter buttons
     updateChapterButtons();
     
-    // Show completion message if all chapters are done
+    // Show completion message if all chapters are done for current trail type
     const chapterSelectionPage = document.getElementById('chapter-selection-page');
     const existingMessage = chapterSelectionPage?.querySelector('.completion-message');
     
-    if (this.progress >= 100) {
+    if (currentProgress >= 100) {
       if (chapterSelectionPage && !existingMessage) {
         const completionMessage = document.createElement('div');
         completionMessage.className = 'completion-message';
         completionMessage.innerHTML = `
-          <h3>🎉 Congratulations! 🎉</h3>
-          <p>All chapters of The Craggy Island Trail are now complete! You've had your fun, and that's all that matters.</p>
-          <p>Have you figured out who the thief was?</p>
-          <button class="share-button" onclick="shareApp()">Share</button>
+          <h3 style="font-family: inherit; font-size: 1.5em; margin-bottom: 1em;">🎉 Congratulations! 🎉</h3>
+          <p style="font-family: inherit; font-size: 1.1em; line-height: 1.5; margin-bottom: 1em;">All chapters of The Craggy Island Trail are now complete! You've had your fun, and that's all that matters.</p>
+          <p style="font-family: inherit; font-size: 1.1em; line-height: 1.5; margin-bottom: 1.5em;">Have you figured out who the thief was?</p>
+          <div class="button-container">
+            <button class="certificate-button" onclick="downloadCertificate()">View Certificate</button>
+            <button class="share-button" onclick="shareApp()">Share</button>
+          </div>
         `;
         chapterSelectionPage.appendChild(completionMessage);
       }
@@ -1178,12 +1214,15 @@ function getCompletedLocations() {
 
 // Function to reset the trail
 function resetTrail() {
+    const isBikeMode = document.querySelector('.transport-button.cycle-trail') !== null;
+    const trailType = isBikeMode ? 'cycle' : 'car';
+    
     const popup = document.createElement('div');
     popup.className = 'popup-overlay';
     popup.innerHTML = `
         <div class="popup-content">
-            <h3>Reset Trail</h3>
-            <p>Are you sure you want to reset your trail progress? This will clear all completed chapters and start you from the beginning.</p>
+            <h3>Reset ${isBikeMode ? 'Cycle' : 'Car'} Trail</h3>
+            <p>Are you sure you want to reset your ${isBikeMode ? 'cycle' : 'car'} trail progress? This will clear all completed chapters for this trail type and start you from the beginning.</p>
             <div class="popup-buttons">
                 <button class="popup-button yes" onclick="confirmResetTrail()">Yes, Reset</button>
                 <button class="popup-button no" onclick="this.parentElement.parentElement.parentElement.remove()">Cancel</button>
@@ -1195,9 +1234,12 @@ function resetTrail() {
 
 // Function to confirm trail reset
 function confirmResetTrail() {
-    // Clear completed chapters
-    AppState.completedChapters.clear();
-    AppState.progress = 0;
+    const isBikeMode = document.querySelector('.transport-button.cycle-trail') !== null;
+    const trailType = isBikeMode ? 'cycle' : 'car';
+    
+    // Clear completed chapters for current trail type only
+    AppState.completedChapters[trailType].clear();
+    AppState.progress[trailType] = 0;
     AppState.save();
     AppState.updateUI();
     
@@ -1255,8 +1297,8 @@ function initializeSettings() {
 
 // Helper function to update slider colors
 function updateSliderColors(slider, variableName) {
-  const value = (slider.value - slider.min) / (slider.max - slider.min) * 100;
-  document.documentElement.style.setProperty(`--${variableName}`, `${value}%`);
+    const value = (slider.value - slider.min) / (slider.max - slider.min) * 100;
+    document.documentElement.style.setProperty(`--${variableName}`, `${value}%`);
 }
 
 // Function to show disclaimer - only called from settings page
@@ -1329,7 +1371,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
         Can you help Father Ted track down the missing Holy Stone?
       </div>
-      <img src="assets/images/trail-map.jpg" alt="Craggy Island Trail Map" class="trail-map">
+      <img src="assets/images/trail-map.jpg
+      " alt="Craggy Island Trail Map" class="trail-map">
     `;
   }
 });
@@ -1339,6 +1382,7 @@ document.addEventListener("DOMContentLoaded", () => {
   // Initialize basic functionality
   AppState.init();
   initializeButtonHandlers();
+  initializeSettings(); // Add settings initialization
   
   // Show intro screen first
   showScreen('intro-screen');
@@ -1377,8 +1421,56 @@ style.textContent = `
     background-color: #4CAF50 !important;
     color: white !important;
 }
+
+.completion-message {
+    text-align: center;
+    margin-top: 2em;
+}
+
+.completion-message .button-container {
+    display: flex;
+    gap: 1em;
+    justify-content: center;
+    margin-top: 1.5em;
+}
+
+.certificate-button {
+    background: linear-gradient(145deg, #4CAF50, #43A047, #388E3C);
+    color: white;
+    font-size: 16px;
+    font-weight: bold;
+    padding: 12px 30px;
+    border: none;
+    border-radius: 25px;
+    cursor: pointer;
+    margin-top: 20px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+}
+
+.certificate-button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 8px rgba(0, 0, 0, 0.2);
+    background: linear-gradient(145deg, #43A047, #388E3C, #2E7D32);
+}
 `;
 document.head.appendChild(style);
+
+// Function to download certificate
+function downloadCertificate() {
+  const isBikeMode = document.querySelector('.transport-button.cycle-trail') !== null;
+  const certificateImage = isBikeMode ? 'congrats-bike.jpg' : 'congrats-car.jpg';
+  
+  // Create a temporary link element
+  const link = document.createElement('a');
+  link.href = `assets/images/${certificateImage}`;
+  link.download = `Craggy-Island-Trail-Certificate-${isBikeMode ? 'Cycle' : 'Car'}.jpg`;
+  
+  // Append to body, click, and remove
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+}
 
 // Function to show text size help
 function showTextSizeHelp() {
