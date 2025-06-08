@@ -70,7 +70,7 @@
 
     <!-- Transportation Page -->
     <div id="transportation-page" class="screen" style="background-image: url('assets/images/trail-choice-background.jpg');">
-        <div class="button-group">
+        <div class="fixed-nav">
             <button id="back-button">Back</button>
             <button id="settings-button">Settings</button>
         </div>
@@ -79,14 +79,14 @@
             <p class="welcome-text">
                 Welcome to The Craggy Island Trail, which will guide you to iconic Father Ted filming locations in County Clare.
                 <br><br>
-                Explore the trail by bicycle or by car. The cycle trail is perfect for those who want to take their time and enjoy the beautiful Irish countryside, while the car trail offers a quicker way to visit all the locations.
+                This is a story-based guide, and you can explore it by bicycle or by car. The cycle trail is perfect for those who want to take their time and enjoy the Irish countryside, while the car trail offers a fast way to visit all the locations.
             </p>
             <div class="transport-buttons">
-                <button class="transport-button cycle-trail" onclick="showScreen('cycle-start-page')">
+                <button class="transport-button cycle-trail">
                     <span class="button-title">Cycle Trail</span>
                     <span class="button-duration">Estimated Time: 3 Days</span>
                 </button>
-                <button class="transport-button car-trail" onclick="showScreen('car-start-page')">
+                <button class="transport-button car-trail">
                     <span class="button-title">By Car</span>
                     <span class="button-duration">Estimated Time: 6 Hours</span>
                 </button>
@@ -101,13 +101,15 @@
             <button id="settings-button">Settings</button>
         </div>
         <div class="start-page-content">
-            <p class="welcome-text">
-                <strong>Welcome to The Craggy Island Cycle Trail!</strong>
-                <br><br>
-                Before you start your cycling adventure, you should know that the Holy Stone of Clonrichert has mysteriously disappeared, and Bishop Brennan demands answers!
-                <br><br>
-                This trail is designed for cyclists, with carefully planned routes and rest stops along the way.
-            </p>
+            <h2>Story Guide</h2>
+            <div class="welcome-text">
+                <p>A shocking discovery has been made at Father Ted's house! The Holy Stone of Clonrichert has mysteriously vanished, and Bishop Brennan demands answers!</p>
+
+                <p>Follow this story-based guide as you gather clues to help you discover who stole the Holy Stone.</p>
+
+                <p><strong>Can you help Father Ted by solving the mystery?</strong></p>
+            </div>
+            <img src="assets/images/trail-map.jpg" alt="Craggy Island Trail Map" class="trail-map">
             <button id="start-trail-button" class="start-button" onclick="showScreen('chapter-selection-page')">
                 Start Cycling Trail
             </button>
@@ -121,13 +123,17 @@
             <button id="settings-button">Settings</button>
         </div>
         <div class="start-page-content">
-            <p class="welcome-text">
-                <strong>Welcome to The Craggy Island Trail!</strong>
-                <br><br>
-                Before you start, you should know that the Holy Stone of Clonrichert has mysteriously disappeared, and Bishop Brennan demands answers!
-            </p>
+            <h2>Story Guide</h2>
+            <div class="welcome-text">
+                <p>A shocking discovery has been made at Father Ted's house! The Holy Stone of Clonrichert has mysteriously vanished, and Bishop Brennan demands answers!</p>
+
+                <p>Follow this story-based guide as you gather clues to help you discover who stole the Holy Stone.</p>
+
+                <p><strong>Can you help Father Ted by solving the mystery?</strong></p>
+            </div>
+            <img src="assets/images/trail-map.jpg" alt="Craggy Island Trail Map" class="trail-map">
             <button id="start-trail-button" class="start-button" onclick="showScreen('chapter-selection-page')">
-                Start Trail
+                Start Car Trail
             </button>
         </div>
     </div>
@@ -147,8 +153,8 @@
       <div id="chapter-list">
         <button class="chapter-button" data-chapter="1">
           <div class="chapter-content">
-            <div class="chapter-title">Chapter 1: Father Ted's House</div>
-            <div class="chapter-description">Begin your journey at the iconic parochial house where Father Ted, Dougal, and Jack lived. Don't forget to have a nice cup of tea!</div>
+            <div class="chapter-title">Chapter 1: St. Kevin's Stump</div>
+            <div class="chapter-description">Begin your journey at St. Kevin's Stump, where the Holy Stone was first discovered missing.</div>
           </div>
           <span class="dropdown-toggle">▼</span>
         </button>
@@ -181,6 +187,18 @@
           <span class="dropdown-toggle">▼</span>
         </button>
       </div>
+      <button id="more-from-ted-button">More from Father Ted</button>
+      <div id="final-quiz" class="final-quiz" style="display: none;">
+        <h3>🎯 Final Quiz: Who's the Thief? 🎯</h3>
+        <p>Now that you've completed all the chapters, can you identify who stole the Holy Stone of Clonrichert?</p>
+        <div class="quiz-options">
+          <button class="quiz-option" data-answer="damo">Father Damo</button>
+          <button class="quiz-option" data-answer="noel">Father Noel Furlong</button>
+          <button class="quiz-option" data-answer="jack">Father Jack Hackett</button>
+          <button class="quiz-option" data-answer="pauline">Pauline McLynn</button>
+          <button class="quiz-option" data-answer="tom">Father Tom</button>
+        </div>
+      </div>
       <div id="completion-message" class="completion-message" style="display: none;">
         <h3>You've completed the Craggy Island Trail!</h3>
         <p>You've had your fun, and that's all that matters.</p>
@@ -188,24 +206,109 @@
       </div>
     </div>
 
-    <!-- Chapter Page -->
-    <div id="chapter-page" class="screen">
+    <!-- More from Father Ted Page -->
+    <div id="more-from-ted-page" class="screen">
       <div class="button-group">
         <button id="back-button">Back</button>
         <button id="settings-button">Settings</button>
       </div>
-      <div class="chapter-content-wrapper">
-        <h2 id="chapter-number">Chapter 1</h2>
-        <h3 id="chapter-title">Father Ted's House</h3>
-        <p id="chapter-description"></p>
-        <img id="chapter-image" src="" alt="" class="chapter-image">
-        <div class="narrative-text" id="chapter-narrative"></div>
-        <div id="map"></div>
-        <div class="location-buttons">
-          <button id="get-directions">Directions</button>
-          <button id="im-here">I've Arrived</button>
+      <div class="content">
+        <h2>More from Father Ted</h2>
+        
+        <div class="info-section">
+          <h3>About the Show</h3>
+          <p>Father Ted was a groundbreaking Irish sitcom that aired from 1995 to 1998. Created by Graham Linehan and Arthur Mathews, this iconic Irish comedy became a cultural phenomenon, winning multiple BAFTA awards and being voted the greatest Irish sitcom of all time in 2004.</p>
+        </div>
+
+        <div class="info-section">
+          <h3>Quick Facts</h3>
+          <ul>
+            <li>25 episodes across 3 series</li>
+            <li>Filmed entirely on location in Ireland</li>
+            <li>Budget: £300,000 per episode</li>
+            <li>The iconic parochial house was a real house in County Clare</li>
+          </ul>
+        </div>
+
+        <div class="info-section">
+          <h3>More Filming Locations</h3>
+          <ul>
+            <li><a href="https://goo.gl/maps/your-location-1" target="_blank">Lahinch Golf Club</a> - Where Bishop Brennan got kicked up the arse</li>
+            <li><a href="https://goo.gl/maps/your-location-2" target="_blank">Doolin Pier</a> - Featured in coastal scenes</li>
+            <li><a href="https://goo.gl/maps/your-location-3" target="_blank">The Burren</a> - The show's unique landscape</li>
+            <li><a href="https://goo.gl/maps/your-location-4" target="_blank">Corofin</a> - Village scenes</li>
+            <li><a href="https://goo.gl/maps/your-location-5" target="_blank">Fanore Beach</a> - Beach episodes</li>
+          </ul>
+        </div>
+
+        <div class="info-section">
+          <h3>Meet the Cast</h3>
+          <div class="cast-member">
+            <img src="assets/images/cast/dermot-morgan.jpg" alt="Dermot Morgan" class="cast-image">
+            <div class="cast-info">
+              <div class="cast-name">Dermot Morgan</div>
+              <div class="cast-role">Father Ted</div>
+              <div class="cast-details">Lead actor who tragically passed away after filming</div>
+            </div>
+          </div>
+          
+          <div class="cast-member">
+            <img src="assets/images/cast/ardal-ohanlon.jpg" alt="Ardal O'Hanlon" class="cast-image">
+            <div class="cast-info">
+              <div class="cast-name">Ardal O'Hanlon</div>
+              <div class="cast-role">Father Dougal</div>
+              <div class="cast-details">Now stars in Death in Paradise</div>
+            </div>
+          </div>
+          
+          <div class="cast-member">
+            <img src="assets/images/cast/frank-kelly.jpg" alt="Frank Kelly" class="cast-image">
+            <div class="cast-info">
+              <div class="cast-name">Frank Kelly</div>
+              <div class="cast-role">Father Jack</div>
+              <div class="cast-details">Veteran actor with 50+ years experience</div>
+            </div>
+          </div>
+          
+          <div class="cast-member">
+            <img src="assets/images/cast/pauline-mclynn.jpg" alt="Pauline McLynn" class="cast-image">
+            <div class="cast-info">
+              <div class="cast-name">Pauline McLynn</div>
+              <div class="cast-role">Mrs. Doyle</div>
+              <div class="cast-details">Actress and children's book author</div>
+            </div>
+          </div>
+          
+          <div class="cast-member">
+            <img src="assets/images/cast/graham-norton.jpg" alt="Graham Norton" class="cast-image">
+            <div class="cast-info">
+              <div class="cast-name">Graham Norton</div>
+              <div class="cast-role">Father Noel</div>
+              <div class="cast-details">Now hosts The Graham Norton Show</div>
+            </div>
+          </div>
         </div>
       </div>
+    </div>
+
+    <!-- Chapter Page -->
+    <div id="chapter-page" class="screen">
+        <div class="button-group">
+            <button id="back-button">Back</button>
+            <button id="settings-button">Settings</button>
+        </div>
+        <div class="chapter-content-wrapper">
+            <h2 id="chapter-number">Chapter 1</h2>
+            <h3 id="chapter-title">Father Ted's House</h3>
+            <p id="chapter-description"></p>
+            <img id="chapter-image" src="" alt="" class="chapter-image">
+            <div class="narrative-text" id="chapter-narrative"></div>
+            <div id="map"></div>
+            <div class="location-buttons">
+                <button id="get-directions">Directions</button>
+                <button id="im-here">I've Arrived</button>
+            </div>
+        </div>
     </div>
 
     <!-- Arrival Page -->
@@ -287,7 +390,7 @@
       }
       
       const script = document.createElement('script');
-      script.src = `https://maps.googleapis.com/maps/api/js?key=AIzaSyD_VbN4V32Pm04itsa_wjyiXYt0u47gMVc&libraries=places&callback=handleGoogleMapsLoad`;
+      script.src = `https://maps.googleapis.com/maps/api/js?key=AIzaSyD_VbN4V32Pm04itsa_wjyiXYt0u47gMVc&libraries=places,routes&callback=handleGoogleMapsLoad`;
       script.async = true;
       script.defer = true;
       

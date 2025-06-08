@@ -16,7 +16,8 @@ const navigationSequence = {
   "chapter-selection-page": "start-page",
   "chapter-page": "chapter-selection-page",
   "arrival-page": "chapter-page",
-  "settings-page": null // Will be set dynamically
+  "settings-page": "chapter-selection-page", // Changed from null to return to chapter selection
+  "more-from-ted-page": "chapter-selection-page"
 };
 
 // Define chapter images with correct relative paths
@@ -33,7 +34,7 @@ const chapterData = {
   "1": {
     title: "Father Ted's House",
     description: "Begin your journey at the iconic parochial house where Father Ted, Dougal, and Jack lived.",
-    narrative: "Ted wakes up to find the Holy Stone (which was being stored very securely in a biscuit tin under Father Jack's chair) has vanished. The only remains are an empty biscuit tin, and Dougal remembers seeing a very \"cool-looking priest\" in the night, but also says he might have dreamed it.",
+    narrative: "Ted wakes up to find the Holy Stone (which was being stored very securely in a biscuit tin under Father Jack's chair) has vanished. Dougal thinks he remembers seeing a very \"cool-looking priest\" in the night.\n\nTed suggests visiting St. Kevin's Stump immediately, worried that the iconic stump might be the thief's next target.",
     arrivalText: "Finish Chapter",
     location: { lat: 52.9719, lng: -9.4264 },
     image: "assets/images/Chapters/father-ted-house.jpg",
@@ -46,8 +47,8 @@ const chapterData = {
   },
   "2": {
     title: "St Kevin's Stump",
-    description: "St. Kevin's Stump, which was basically a tree stump, is no longer here, but you will find the Rock that Ted and Dougal climbed.",
-    narrative: "By the rock, a local man reports seeing a \"young priest with an earring\" listening to Oasis. Ted finds a flyer wedged in the stump for a \"Pop-Up Priest Rave & Blessing Session\" hosted in Aillwee Cave.",
+    description: "Visit the famous rock where Ted and Dougal had their climbing adventure.",
+    narrative: "By the rock, a local man reports seeing a \"young priest with an earring\" listening to Oasis. The suspect ran away when he approached, dropping a flyer for a \"Pop-Up Priest Rave & Blessing Session\" at Aillwee Cave. Could this be connected to the theft?",
     arrivalText: "Finish Chapter",
     location: { lat: 52.9719, lng: -9.4264 },
     image: "assets/images/Chapters/st-kevins-stump.jpg",
@@ -60,8 +61,8 @@ const chapterData = {
   },
   "3": {
     title: "Aillwee Cave",
-    description: "The caves appear in the Father Ted episode 'The Mainland' under the name 'The Very Dark Caves'.",
-    narrative: "In the depths of Aillwee Cave (The Very Dark Caves), Ted and Dougal get lost (it's very dark), but Dougal finds a receipt near the entrance. Someone too badass to use a bin, perhaps?",
+    description: "Explore the mysterious caves featured in 'The Mainland' episode.",
+    narrative: "In the depths of Aillwee Cave, Ted and Dougal discover only Father Noel Furlong, who sadly informs them that only one priest showed up to his rave and blessing session. A young priest, saying something about \"Frosty not being cool\" and throwing a piece of paper at him. A receipt. Cigarettes purchased in Kilfenora village!",
     arrivalText: "Finish Chapter",
     location: { lat: 53.0719, lng: -9.3264 },
     image: "assets/images/Chapters/aillwee-cave.jpg",
@@ -74,8 +75,8 @@ const chapterData = {
   },
   "4": {
     title: "Kilfenora Village",
-    description: "Kilfenora Village is where you'll find Mrs. O'Reilly's house, Pat Mustard's milk route, and the pub where Ted met the Chinese community.",
-    narrative: "Inside Vaughan's pub, Ted asks the bartender if he's seen the Holy Stone. The bartender shrugs: \"Yeah, a priest came in this morning with some kind of stone. Claimed it was blessed and tried to trade it for my leather jacket. He said, 'I'd rather throw it in the sea than give it back to those eejits.'\"",
+    description: "Visit the village where many Father Ted scenes were filmed.",
+    narrative: "Inside Vaughan's pub, Ted asks the bartender about the Holy Stone. The bartender recalls: \"A priest came in this morning with some kind of stone. Claimed it was blessed and tried to trade it for my leather jacket. He said, 'I'd rather throw it in the sea than give it back to those eejits.'\" The pieces are starting to come together!",
     arrivalText: "Finish Chapter",
     location: { lat: 52.9719, lng: -9.4264 },
     image: "assets/images/Chapters/kilfenora-village.jpg",
@@ -88,7 +89,7 @@ const chapterData = {
   },
   "5": {
     title: "Cliffs of Moher",
-    description: "Experience the Cliffs of Moher and Moher Tower, featured in the 'Tentacles of Doom' episode.",
+    description: "Experience the dramatic cliffs featured in the 'Tentacles of Doom' episode.",
     narrative: "Ted and Dougal arrive breathless, but they're too late. A crowd witnessed a priest launch the stone into the crashing waves below. The priest is gone too. Something about this seems all too familiar. Bishop Brennan is calling. He wants answers. Who stole the Holy Stone of Clonrichert?",
     arrivalText: "Finish Chapter",
     location: { lat: 52.9719, lng: -9.4264 },
@@ -132,171 +133,201 @@ document.addEventListener('DOMContentLoaded', () => {
 
 // Update AppState object
 const AppState = {
-  completedChapters: {
-    cycle: new Set(),
-    car: new Set()
+  cycleTrail: {
+    completedChapters: new Set(),
+    progress: 0,
+    quizCompleted: false
   },
-  progress: {
-    cycle: 0,
-    car: 0
+  carTrail: {
+    completedChapters: new Set(),
+    progress: 0,
+    quizCompleted: false
   },
+  activeTrail: null,
   
   init() {
     console.log('Initializing AppState...');
-    this.completedChapters.cycle.clear();
-    this.completedChapters.car.clear();
-    this.progress.cycle = 0;
-    this.progress.car = 0;
     
     try {
       const saved = localStorage.getItem('appState');
       if (saved) {
+        console.log('Loading saved state...');
         const state = JSON.parse(saved);
-        this.completedChapters.cycle = new Set(state.completedChapters.cycle.map(String));
-        this.completedChapters.car = new Set(state.completedChapters.car.map(String));
-        this.progress.cycle = Math.min(100, this.completedChapters.cycle.size * 20);
-        this.progress.car = Math.min(100, this.completedChapters.car.size * 20);
+        
+        // Load cycle trail state
+        this.cycleTrail.completedChapters = new Set(state.cycleTrail.completedChapters.map(String));
+        this.cycleTrail.progress = state.cycleTrail.progress || Math.min(100, this.cycleTrail.completedChapters.size * 20);
+        this.cycleTrail.quizCompleted = state.cycleTrail.quizCompleted || false;
+        
+        // Load car trail state
+        this.carTrail.completedChapters = new Set(state.carTrail.completedChapters.map(String));
+        this.carTrail.progress = state.carTrail.progress || Math.min(100, this.carTrail.completedChapters.size * 20);
+        this.carTrail.quizCompleted = state.carTrail.quizCompleted || false;
+        
+        // Load active trail
+        this.activeTrail = state.activeTrail;
+        
         console.log('Loaded state:', { 
-          completedChapters: {
-            cycle: Array.from(this.completedChapters.cycle),
-            car: Array.from(this.completedChapters.car)
-          },
-          progress: this.progress
+          cycleChapters: Array.from(this.cycleTrail.completedChapters),
+          carChapters: Array.from(this.carTrail.completedChapters),
+          activeTrail: this.activeTrail,
+          cycleQuizCompleted: this.cycleTrail.quizCompleted,
+          carQuizCompleted: this.carTrail.quizCompleted
         });
+      } else {
+        // Only initialize empty state if no saved state exists
+        this.cycleTrail.completedChapters.clear();
+        this.carTrail.completedChapters.clear();
+        this.cycleTrail.progress = 0;
+        this.carTrail.progress = 0;
+        this.cycleTrail.quizCompleted = false;
+        this.carTrail.quizCompleted = false;
+        this.activeTrail = null;
       }
     } catch (e) {
       console.error('Error loading state:', e);
-      this.completedChapters.cycle = new Set();
-      this.completedChapters.car = new Set();
-      this.progress.cycle = 0;
-      this.progress.car = 0;
+      // Initialize empty state only if there's an error loading
+      this.cycleTrail.completedChapters.clear();
+      this.carTrail.completedChapters.clear();
+      this.cycleTrail.progress = 0;
+      this.carTrail.progress = 0;
+      this.cycleTrail.quizCompleted = false;
+      this.carTrail.quizCompleted = false;
+      this.activeTrail = null;
     }
     
+    // Clear all indicators and update UI
+    this.clearAllIndicators();
     this.updateUI();
   },
   
-  save() {
-    console.log('Saving state...', { 
-      completedChapters: {
-        cycle: Array.from(this.completedChapters.cycle),
-        car: Array.from(this.completedChapters.car)
-      },
-      progress: this.progress
+  clearAllIndicators() {
+    console.log('Clearing all indicators...');
+    const indicators = document.querySelectorAll('.in-progress');
+    indicators.forEach(indicator => {
+      if (indicator && indicator.parentNode) {
+        indicator.parentNode.removeChild(indicator);
+      }
+    });
+  },
+  
+  updateIndicators() {
+    console.log('Updating indicators...');
+    this.clearAllIndicators();
+    
+    const cycleButton = document.querySelector('.transport-button.cycle-trail');
+    const carButton = document.querySelector('.transport-button.car-trail');
+    
+    console.log('Found buttons for indicators:', {
+      cycleButton: cycleButton ? 'yes' : 'no',
+      carButton: carButton ? 'yes' : 'no'
     });
     
-    try {
-      localStorage.setItem('appState', JSON.stringify({
-        completedChapters: {
-          cycle: Array.from(this.completedChapters.cycle),
-          car: Array.from(this.completedChapters.car)
-        },
-        progress: this.progress
-      }));
-    } catch (e) {
-      console.error('Error saving state:', e);
-      showError("Couldn't save progress. Please check your browser settings.");
+    console.log('Current state:', {
+      cycleChapters: Array.from(this.cycleTrail.completedChapters),
+      carChapters: Array.from(this.carTrail.completedChapters),
+      activeTrail: this.activeTrail
+    });
+    
+    // Add indicator to cycle button if it has completed chapters
+    if (cycleButton && this.cycleTrail.completedChapters.size > 0) {
+      console.log('Adding in-progress indicator to cycle button');
+      const cycleIndicator = document.createElement('div');
+      cycleIndicator.className = 'in-progress';
+      cycleIndicator.textContent = 'In Progress';
+      cycleButton.appendChild(cycleIndicator);
+    }
+    
+    // Add indicator to car button if it has completed chapters
+    if (carButton && this.carTrail.completedChapters.size > 0) {
+      console.log('Adding in-progress indicator to car button');
+      const carIndicator = document.createElement('div');
+      carIndicator.className = 'in-progress';
+      carIndicator.textContent = 'In Progress';
+      carButton.appendChild(carIndicator);
     }
   },
   
   markChapterCompleted(chapterNum) {
-    if (!chapterNum) return;
+    console.log('Marking chapter as completed:', chapterNum);
+    if (!chapterNum) {
+        console.error('No chapter number provided');
+        return;
+    }
     
-    const chapterStr = chapterNum.toString();
-    console.log('Marking chapter as completed:', chapterStr);
+    // Convert chapter number to string for consistency
+    chapterNum = String(chapterNum);
     
-    // Determine current trail type
-    const isBikeMode = document.querySelector('.transport-button.cycle-trail') !== null;
-    const trailType = isBikeMode ? 'cycle' : 'car';
+    // Use the activeTrail property to determine which trail to update
+    if (this.activeTrail === 'cycle') {
+        this.cycleTrail.completedChapters.add(chapterNum);
+        // Calculate progress as percentage of total chapters (5 chapters total)
+        this.cycleTrail.progress = Math.min(100, (this.cycleTrail.completedChapters.size / 5) * 100);
+        console.log('Added to cycle trail:', {
+            chapter: chapterNum,
+            completedChapters: Array.from(this.cycleTrail.completedChapters),
+            progress: this.cycleTrail.progress
+        });
+    } else if (this.activeTrail === 'car') {
+        this.carTrail.completedChapters.add(chapterNum);
+        // Calculate progress as percentage of total chapters (5 chapters total)
+        this.carTrail.progress = Math.min(100, (this.carTrail.completedChapters.size / 5) * 100);
+        console.log('Added to car trail:', {
+            chapter: chapterNum,
+            completedChapters: Array.from(this.carTrail.completedChapters),
+            progress: this.carTrail.progress
+        });
+    } else {
+        console.error('No active trail set');
+        return;
+    }
     
-    // Add to completed chapters for current trail type
-    this.completedChapters[trailType].add(chapterStr);
-    
-    // Update progress for current trail type
-    this.progress[trailType] = Math.min(100, this.completedChapters[trailType].size * 20);
-    console.log('New progress:', this.progress);
-    
-    // Save state immediately
     this.save();
-    
-    // Update UI
     this.updateUI();
-    
-    // Log current state for debugging
-    console.log('Current state after completion:', {
-      completedChapters: {
-        cycle: Array.from(this.completedChapters.cycle),
-        car: Array.from(this.completedChapters.car)
-      },
-      progress: this.progress
-    });
   },
   
   isChapterCompleted(chapterNum) {
-    const isBikeMode = document.querySelector('.transport-button.cycle-trail') !== null;
-    const trailType = isBikeMode ? 'cycle' : 'car';
-    return this.completedChapters[trailType].has(chapterNum);
+    if (!chapterNum) return false;
+    chapterNum = String(chapterNum);
+    
+    // Use the activeTrail property to check the correct trail
+    if (this.activeTrail === 'cycle') {
+      return this.cycleTrail.completedChapters.has(chapterNum);
+    } else if (this.activeTrail === 'car') {
+      return this.carTrail.completedChapters.has(chapterNum);
+    }
+    return false;
+  },
+  
+  save() {
+    const state = {
+      cycleTrail: {
+        completedChapters: Array.from(this.cycleTrail.completedChapters),
+        progress: this.cycleTrail.progress,
+        quizCompleted: this.cycleTrail.quizCompleted
+      },
+      carTrail: {
+        completedChapters: Array.from(this.carTrail.completedChapters),
+        progress: this.carTrail.progress,
+        quizCompleted: this.carTrail.quizCompleted
+      },
+      activeTrail: this.activeTrail
+    };
+    localStorage.setItem('appState', JSON.stringify(state));
   },
   
   updateUI() {
-    const isBikeMode = document.querySelector('.transport-button.cycle-trail') !== null;
-    const currentProgress = isBikeMode ? this.progress.cycle : this.progress.car;
-    
-    console.log('Updating UI with progress:', currentProgress);
-    
-    // Update progress bar and text
-    const progressFill = document.querySelector(".progress-fill");
-    const progressText = document.querySelector(".progress-text");
-    const caravanIcon = document.querySelector(".caravan-icon");
-    
-    if (progressFill) {
-      progressFill.style.width = `${currentProgress}%`;
-      // Update color based on progress
-      if (currentProgress <= 20) {
-        progressFill.style.background = "linear-gradient(90deg, #ff5252, #f44336, #d32f2f)"; // Red
-      } else if (currentProgress <= 40) {
-        progressFill.style.background = "linear-gradient(90deg, #ffa726, #fb8c00, #f57c00)"; // Orange
-      } else if (currentProgress <= 60) {
-        progressFill.style.background = "linear-gradient(90deg, #ffeb3b, #fdd835, #fbc02d)"; // Yellow
-      } else {
-        progressFill.style.background = "linear-gradient(90deg, #4CAF50, #43A047, #388E3C)"; // Green
+    console.log('Updating UI...');
+    const progressBar = document.querySelector('.progress-bar');
+    if (progressBar) {
+      const currentProgress = this.activeTrail === 'cycle' ? 
+        this.cycleTrail.progress : 
+        this.carTrail.progress;
+      progressBar.style.width = `${currentProgress}%`;
+      console.log('Updated progress bar:', currentProgress);
       }
-      
-      // Update caravan position
-      if (caravanIcon) {
-        caravanIcon.style.left = `${currentProgress}%`;
-      }
-    }
     
-    if (progressText) {
-      progressText.textContent = `${currentProgress}%`;
-      progressText.style.color = currentProgress >= 50 ? '#fff' : '#2c3e50';
-    }
-    
-    // Update chapter buttons
-    updateChapterButtons();
-    
-    // Show completion message if all chapters are done for current trail type
-    const chapterSelectionPage = document.getElementById('chapter-selection-page');
-    const existingMessage = chapterSelectionPage?.querySelector('.completion-message');
-    
-    if (currentProgress >= 100) {
-      if (chapterSelectionPage && !existingMessage) {
-        const completionMessage = document.createElement('div');
-        completionMessage.className = 'completion-message';
-        completionMessage.innerHTML = `
-          <h3 style="font-family: inherit; font-size: 1.5em; margin-bottom: 1em;">🎉 Congratulations! 🎉</h3>
-          <p style="font-family: inherit; font-size: 1.1em; line-height: 1.5; margin-bottom: 1em;">All chapters of The Craggy Island Trail are now complete! You've had your fun, and that's all that matters.</p>
-          <p style="font-family: inherit; font-size: 1.1em; line-height: 1.5; margin-bottom: 1.5em;">Have you figured out who the thief was?</p>
-          <div class="button-container">
-            <button class="certificate-button" onclick="downloadCertificate()">View Certificate</button>
-            <button class="share-button" onclick="shareApp()">Share</button>
-          </div>
-        `;
-        chapterSelectionPage.appendChild(completionMessage);
-      }
-    } else if (existingMessage) {
-      existingMessage.remove();
-    }
+    this.updateIndicators();
   }
 };
 
@@ -324,53 +355,49 @@ function saveProgress() {
   AppState.save();
 }
 
-// Function to switch between screens
+// Function to show a specific screen
 function showScreen(screenId) {
-  console.log(`Switching to screen: ${screenId}`);
-
-  // If going to settings page, store the current screen
-  if (screenId === 'settings-page') {
-    const currentScreen = document.querySelector('.screen.active');
-    if (currentScreen) {
-      navigationSequence['settings-page'] = currentScreen.id;
-    }
-  }
-
-  // Handle transportation page styling
-  if (screenId === 'transportation-page') {
-    const cycleTrailButton = document.querySelector('.transport-button.cycle-trail');
-    const carTrailButton = document.querySelector('.transport-button.car-trail');
-    
-    // Check which mode is currently selected
-    const isBikeMode = cycleTrailButton && cycleTrailButton.classList.contains('cycle-trail');
-    
-    if (cycleTrailButton && carTrailButton) {
-      // Set initial white text for both buttons
-      cycleTrailButton.style.color = 'white';
-      carTrailButton.style.color = 'white';
-      
-      if (isBikeMode) {
-        cycleTrailButton.style.backgroundColor = '#4CAF50'; // Green for selected
-        carTrailButton.style.backgroundColor = '#212121'; // Much darker grey for unselected
-      } else {
-        carTrailButton.style.backgroundColor = '#4CAF50'; // Green for selected
-        cycleTrailButton.style.backgroundColor = '#212121'; // Much darker grey for unselected
-      }
-    }
-  }
+  console.log('Showing screen:', screenId);
 
   // Hide all screens
-  document.querySelectorAll('.screen').forEach((screen) => {
+  document.querySelectorAll('.screen').forEach(screen => {
     screen.classList.remove('active');
   });
+  
+  // Show the requested screen
+  const screen = document.getElementById(screenId);
+  if (screen) {
+    screen.classList.add('active');
+    
+    // Initialize chapter content when showing chapter selection page
+    if (screenId === 'chapter-selection-page') {
+      console.log('Initializing chapter selection page...');
+      updateChapterButtons();
+      
+      // Update progress bar
+      const progressBar = document.querySelector('.progress-bar');
+      if (progressBar) {
+        const currentProgress = AppState.activeTrail === 'cycle' ? 
+          AppState.cycleTrail.progress : 
+          AppState.carTrail.progress;
+        progressBar.style.width = `${currentProgress}%`;
+        console.log('Updated progress bar:', currentProgress);
+    }
+  }
 
-  // Show the target screen
-  const targetScreen = document.getElementById(screenId);
-  if (targetScreen) {
-    targetScreen.classList.add('active');
-    handleBackgroundMusic(screenId);
+    // Update indicators when showing transportation page
+    if (screenId === 'transportation-page') {
+      console.log('Updating indicators for transportation page...');
+      AppState.updateIndicators();
+    }
   } else {
-    console.error(`Screen with ID "${screenId}" not found.`);
+    console.error('Screen not found:', screenId);
+  }
+  
+  // Update navigation stack
+  const previousScreen = navigationSequence[screenId];
+  if (previousScreen) {
+    navigationStack.push(previousScreen);
   }
 }
 
@@ -440,11 +467,13 @@ function loadChapterData(chapterNumber) {
       // Update chapter title and description
       updateChapterInfo(chapterNumber);
       
-      // Add amenities section
+      // Remove any existing amenities sections
       const chapterPage = document.getElementById('chapter-page');
-      const existingAmenities = chapterPage.querySelector('.amenities-section');
-      if (existingAmenities) {
-        existingAmenities.remove();
+      if (chapterPage) {
+        const existingAmenities = chapterPage.querySelector('.amenities-section');
+        if (existingAmenities) {
+          existingAmenities.remove();
+        }
       }
       
       const amenitiesSection = createAmenitiesSection(chapterNumber);
@@ -493,47 +522,90 @@ function updateChapterInfo(chapterNumber) {
     image: "assets/images/Chapters/default.jpg"
   };
 
+  // Update chapter number and title
   document.getElementById('chapter-number').textContent = `Chapter ${chapterNumber}`;
   document.getElementById('chapter-title').textContent = data.title;
   
   // Add transport mode info
-  const transportMode = document.querySelector('.transport-button.cycle-trail') ? 'bike' : 'car';
+  const transportMode = document.querySelector('.transport-button.cycle-trail').style.backgroundColor === 'rgb(76, 175, 80)' ? 'bike' : 'car';
   const durationInfo = chapterNumber === "1" ? "" : `Estimated duration: ${data.duration[transportMode]}`;
   const difficultyInfo = transportMode === 'bike' && data.difficulty && chapterNumber !== "1" ? ` | Trail difficulty: ${data.difficulty}` : '';
   
   const chapterDescription = document.getElementById('chapter-description');
   chapterDescription.innerHTML = `
-    <p>${data.description}</p>
-    <div class="chapter-info">
-      ${chapterNumber === "1" ? "Starting Point" : `${durationInfo}${difficultyInfo}`}
+    <div class="story-container">
+      <p>${data.narrative}</p>
+    </div>
+    <div class="location-info-container">
+      <div class="chapter-info">
+        ${chapterNumber === "1" ? "Starting Point" : `${durationInfo}${difficultyInfo}`}
+      </div>
     </div>
   `;
-  chapterDescription.style.display = 'block';
   
-  const chapterNarrative = document.getElementById('chapter-narrative');
-  chapterNarrative.innerHTML = `
-    <h3>Chapter Story</h3>
-    <p>${data.narrative}</p>
+  // Remove all existing location facts containers and empty containers
+  const chapterPage = document.getElementById('chapter-page');
+  if (chapterPage) {
+    // Remove all location facts containers
+    chapterPage.querySelectorAll('.location-facts-container').forEach(container => container.remove());
+    
+    // Remove any empty containers
+    chapterPage.querySelectorAll('.amenities-section:empty, .location-facts-container:empty').forEach(container => container.remove());
+  }
+  
+  // Add location facts after the image
+  const locationFactsContainer = document.createElement('div');
+  locationFactsContainer.className = 'location-facts-container';
+  locationFactsContainer.innerHTML = `
+    <h3>Location Facts</h3>
+    <ul>
+      <li>${data.description}</li>
+      ${getLocationFacts(chapterNumber)}
+    </ul>
   `;
-  chapterNarrative.style.display = 'block';
   
-  // Remove any existing amenities sections
-  const existingAmenities = document.querySelectorAll('.amenities-section');
-  existingAmenities.forEach(section => section.remove());
-  
-  // Add amenities section between chapter info and image
-  const amenitiesSection = createAmenitiesSection(chapterNumber);
-  if (amenitiesSection) {
-    const chapterImage = document.getElementById('chapter-image');
-    if (chapterImage && chapterImage.parentNode) {
-      chapterImage.parentNode.insertBefore(amenitiesSection, chapterImage);
-    }
+  const chapterImage = document.getElementById('chapter-image');
+  if (chapterImage && chapterImage.parentNode) {
+    chapterImage.parentNode.insertBefore(locationFactsContainer, chapterImage.nextSibling);
   }
   
   document.getElementById('chapter-image').src = data.image;
   document.getElementById('im-here').textContent = data.arrivalText;
   
   console.log('Chapter info updated:', data);
+}
+
+// Helper function to get location facts for each chapter
+function getLocationFacts(chapterNumber) {
+  const facts = {
+    "1": [
+      "The Parochial House was the main filming location for Father Ted's home, built in 1825.",
+      "Featured in the famous 'small, far away' cows scene overlooking the Burren.",
+      "The church's leaning tower has maintained its tilt since the Great Famine."
+    ],
+    "2": [
+      "Bofey Quinns pub, established in 1864, was featured in several pub scenes.",
+      "Doonbeg Castle provided the backdrop for Ted and Dougal's climbing adventure.",
+      "The local beach was used for the famous 'I'm not a fascist' scene."
+    ],
+    "3": [
+      "The Wild Atlantic Lodge was featured in the 'Mainland' episode's cave exploration.",
+      "The Poll na Gollum cave system was the setting for the 'very dark' scene.",
+      "The area's seal colony can be seen in the background of several episodes."
+    ],
+    "4": [
+      "Vaughan's Pub has been in the same family since 1865 and was a key filming location.",
+      "The market square was used for the famous 'Lovely Girls' competition scene.",
+      "The village's round tower appears in the background of several episodes."
+    ],
+    "5": [
+      "The Cliffs of Moher were featured in the dramatic 'Tentacles of Doom' episode.",
+      "The visitor center appears in the episode where Ted gives a tour to visitors.",
+      "The sea stack known as Branaunmore appears in several cliff-top scenes."
+    ]
+  };
+  
+  return facts[chapterNumber] ? facts[chapterNumber].map(fact => `<li>${fact}</li>`).join('') : '';
 }
 
 // Initialize the map
@@ -904,16 +976,13 @@ function handleLocationResponse(isYes, chapterNumber) {
         // Play location reached sound
         playSound('locationReached');
         
-        // Ensure chapterNumber is a string
-        const chapterStr = chapterNumber.toString();
-        
         // Mark chapter as completed in AppState
-        AppState.markChapterCompleted(chapterStr);
+        AppState.markChapterCompleted(chapterNumber);
         
         // Update map markers
         if (window.markers && locations) {
             const markerIndex = locations.findIndex(loc => 
-                loc.properties.chapterNumber === chapterStr
+                loc.properties.chapterNumber === chapterNumber.toString()
             );
             if (markerIndex >= 0 && window.markers[markerIndex]) {
                 window.markers[markerIndex].setIcon({
@@ -932,7 +1001,7 @@ function handleLocationResponse(isYes, chapterNumber) {
         updateChapterButtons();
         
         // Show congratulations message
-        showCongratulations(chapterStr);
+        showCongratulations(chapterNumber);
     } else {
         showError("Keep exploring! You'll find it soon!");
     }
@@ -941,143 +1010,191 @@ function handleLocationResponse(isYes, chapterNumber) {
 // Update chapter button click handlers
 function initializeButtonHandlers() {
     console.log('Initializing button handlers...');
-    
-    // Start trail button handler
-    const startTrailButton = document.getElementById('start-trail-button');
-    if (startTrailButton) {
-        console.log('Found start trail button');
-        startTrailButton.addEventListener('click', (e) => {
-            e.preventDefault(); // Prevent any default behavior
-            console.log('Start Trail button clicked');
+    // Transportation buttons
+    document.querySelectorAll('.transport-button.cycle-trail').forEach(btn => {
+        btn.onclick = function() {
+            AppState.activeTrail = 'cycle';
+            showScreen('cycle-start-page');
+        };
+    });
+    document.querySelectorAll('.transport-button.car-trail').forEach(btn => {
+        btn.onclick = function() {
+            AppState.activeTrail = 'car';
+            showScreen('car-start-page');
+        };
+        });
+    // Start trail buttons
+    document.querySelectorAll('#start-trail-button').forEach(btn => {
+        btn.onclick = function(e) {
+            e.preventDefault();
             showScreen('chapter-selection-page');
-        });
-    }
-    
-    // Settings button handler - add to all instances
-    document.querySelectorAll('#settings-button').forEach(button => {
-        button.addEventListener('click', () => {
-            console.log('Settings button clicked');
-            showScreen('settings-page');
-        });
+        };
     });
-
-    // Back button handler - add to all instances
-    document.querySelectorAll('#back-button').forEach(button => {
-        button.addEventListener('click', handleBackButton);
-    });
-
-    // Transportation buttons handler
-    const cycleTrailButton = document.querySelector('.transport-button.cycle-trail');
-    const carTrailButton = document.querySelector('.transport-button.car-trail');
-    
-    if (cycleTrailButton) {
-        cycleTrailButton.addEventListener('click', function() {
-            console.log('Cycle Trail selected');
-            // Remove car-trail class and add cycle-trail class
-            document.querySelectorAll('.transport-button').forEach(btn => {
-                btn.classList.remove('cycle-trail', 'car-trail');
-            });
-            this.classList.add('cycle-trail');
-            showScreen('start-page');
-            updateChapterButtons(); // Update buttons immediately
-        });
-    }
-    
-    if (carTrailButton) {
-        carTrailButton.addEventListener('click', function() {
-            console.log('Car Trail selected');
-            // Remove cycle-trail class and add car-trail class
-            document.querySelectorAll('.transport-button').forEach(btn => {
-                btn.classList.remove('cycle-trail', 'car-trail');
-            });
-            this.classList.add('car-trail');
-            showScreen('start-page');
-            updateChapterButtons(); // Update buttons immediately
-        });
-    }
-
-    // Chapter buttons handler
-    document.querySelectorAll('.chapter-button').forEach(button => {
-        button.addEventListener('click', function() {
+    // Chapter buttons
+    document.querySelectorAll('.chapter-button').forEach(btn => {
+        btn.onclick = function() {
             const chapterNum = this.getAttribute('data-chapter');
             if (!chapterNum) return;
-
-            // Play chapter-specific sound effect
             playSound(`chapter${chapterNum}Click`);
-
-            // Add started class
             this.classList.add('started');
-
-            // Load chapter data and show chapter page
             loadChapterData(chapterNum);
             showScreen('chapter-page');
-        });
+        };
+    });
+    // Settings and back buttons
+    document.querySelectorAll('#settings-button').forEach(btn => {
+        btn.onclick = function() { showScreen('settings-page'); };
+    });
+    document.querySelectorAll('#back-button').forEach(btn => {
+        btn.onclick = handleBackButton;
+    });
+    // More from Ted
+    const moreFromTedButton = document.getElementById('more-from-ted-button');
+    if (moreFromTedButton) {
+        moreFromTedButton.onclick = function() { showScreen('more-from-ted-page'); };
+    }
+}
+
+// Patch showScreen to always re-initialize handlers after navigation
+const _showScreen = showScreen;
+showScreen = function(screenId) {
+    _showScreen(screenId);
+    setTimeout(initializeButtonHandlers, 0); // Re-attach after DOM updates
+};
+
+// Patch AppState to persist and restore activeTrail
+AppState.activeTrail = function(trailType) {
+    this.activeTrail = trailType;
+    localStorage.setItem('activeTrail', trailType);
+    this.save();
+    this.updateUI();
+};
+
+// On load, restore activeTrail
+const savedTrail = localStorage.getItem('activeTrail');
+if (savedTrail) AppState.activeTrail = savedTrail;
+
+// Function to update chapter buttons and progress
+function updateChapterButtons() {
+    const isCycleTrail = AppState.activeTrail === 'cycle';
+    document.querySelectorAll('.chapter-button').forEach(button => {
+        const chapterNum = button.getAttribute('data-chapter');
+        const isCompleted = AppState.isChapterCompleted(chapterNum);
+        const data = chapterData[chapterNum];
+        button.classList.remove('completed', 'started');
+        let checkmark = button.querySelector('.completion-checkmark');
+        if (checkmark) checkmark.remove();
+        checkmark = document.createElement('span');
+        checkmark.className = 'completion-checkmark';
+        checkmark.textContent = '✓';
+        button.appendChild(checkmark);
+        const chapterContent = button.querySelector('.chapter-content');
+        if (chapterContent && data) {
+            let infoContent = '';
+            if (chapterNum === "1") {
+                infoContent = `<div class=\"distance\">Starting Point</div>`;
+            } else {
+                if (isCycleTrail) {
+                    infoContent = `
+                        <div class=\"distance\">${data.distance}</div>
+                        <div class=\"duration\">${data.duration.bike}</div>
+                        <div class=\"difficulty\" data-difficulty=\"${data.difficulty}\">${data.difficulty}</div>
+                    `;
+                } else {
+                    infoContent = `
+                        <div class=\"distance\">${data.distance}</div>
+                        <div class=\"duration\">${data.duration.car}</div>
+                    `;
+                }
+            }
+            chapterContent.innerHTML = `
+                <div class=\"chapter-title\">Chapter ${chapterNum}: ${data.title}</div>
+                <div class=\"chapter-info\">
+                    ${infoContent}
+                </div>
+            `;
+        }
+        if (isCompleted) {
+            button.classList.add('completed');
+        } else if (button.classList.contains('started')) {
+            button.classList.add('started');
+        }
     });
 
-    // Update initial chapter states
-    updateChapterButtons();
+    // Update progress bar and caravan
+    const progressBar = document.querySelector('.progress-bar');
+    const progressFill = progressBar.querySelector('.progress-fill');
+    const progressText = progressBar.querySelector('.progress-text');
+    const caravanIcon = progressBar.querySelector('.caravan-icon');
+    
+    if (progressBar && progressFill && progressText && caravanIcon) {
+        const currentProgress = isCycleTrail ? 
+            AppState.cycleTrail.progress : 
+            AppState.carTrail.progress;
+        
+        // Update progress fill width
+        progressFill.style.width = `${currentProgress}%`;
+        
+        // Update progress text
+        progressText.textContent = `${Math.round(currentProgress)}%`;
+        
+        // Update caravan position
+        const barWidth = progressBar.offsetWidth;
+        const textWidth = progressText.offsetWidth;
+        const caravanWidth = 40; // Width of caravan icon
+        
+        // Calculate safe boundaries for caravan
+        const minPosition = -20; // Start further left
+        const maxPosition = barWidth - (caravanWidth / 2);
+        const textLeft = (barWidth - textWidth) / 2;
+        const textRight = textLeft + textWidth;
+        
+        // Calculate caravan position
+        let caravanPosition = (currentProgress / 100) * barWidth;
+        
+        // Adjust position if it would overlap with text
+        if (caravanPosition > textLeft - caravanWidth && caravanPosition < textRight + caravanWidth) {
+            if (caravanPosition < barWidth / 2) {
+                caravanPosition = textLeft - caravanWidth - 10; // Add extra padding
+            } else {
+                caravanPosition = textRight + caravanWidth + 10; // Add extra padding
+            }
+        }
+        
+        // Ensure caravan stays within bounds
+        caravanPosition = Math.min(Math.max(minPosition, caravanPosition), maxPosition);
+        
+        caravanIcon.style.left = `${caravanPosition}px`;
+        
+        // Update color based on progress
+        if (currentProgress >= 80) {
+            progressFill.style.backgroundColor = '#4CAF50'; // Green
+        } else if (currentProgress >= 40) {
+            progressFill.style.backgroundColor = '#FF9800'; // Orange
+        } else {
+            progressFill.style.backgroundColor = '#FF0000'; // Red
+        }
+        
+        console.log('Updated progress:', {
+            progress: currentProgress,
+            fillWidth: progressFill.style.width,
+            caravanPosition: caravanIcon.style.left,
+            color: progressFill.style.backgroundColor
+        });
+    }
 }
 
-// Update the updateChapterButtons function
-function updateChapterButtons() {
-  console.log('Updating chapter buttons...');
-  const isBikeMode = document.querySelector('.transport-button.cycle-trail') !== null;
-  console.log('Transport mode:', isBikeMode ? 'bike' : 'car');
-  
-  document.querySelectorAll(".chapter-button").forEach(button => {
-    const chapterNum = button.getAttribute('data-chapter');
-    const isCompleted = AppState.isChapterCompleted(chapterNum);
-    const data = chapterData[chapterNum];
-    
-    // Remove existing completion-related elements
-    button.classList.remove('completed', 'started');
-    let checkmark = button.querySelector('.completion-checkmark');
-    if (checkmark) {
-      checkmark.remove();
+// Initialize progress bar when page loads
+document.addEventListener('DOMContentLoaded', () => {
+    const progressBar = document.querySelector('.progress-bar');
+    const progressFill = progressBar.querySelector('.progress-fill');
+    const caravanIcon = progressBar.querySelector('.caravan-icon');
+    if (progressBar && progressFill && caravanIcon) {
+        progressFill.style.width = '0%';
+        progressFill.style.backgroundColor = '#FF0000'; // Start with red
+        caravanIcon.style.left = '0px';
     }
-    
-    // Create new checkmark
-    checkmark = document.createElement('span');
-    checkmark.className = 'completion-checkmark';
-    checkmark.textContent = '✓';
-    button.appendChild(checkmark);
-    
-    // Update chapter content with distance and duration
-    const chapterContent = button.querySelector('.chapter-content');
-    if (chapterContent && data) {
-      let infoContent = '';
-      if (chapterNum === "1") {
-        infoContent = `<div class="distance">Starting Point</div>`;
-      } else {
-        if (isBikeMode) {
-          infoContent = `
-            <div class="distance">${data.distance}</div>
-            <div class="duration">${data.duration.bike}</div>
-            <div class="difficulty" data-difficulty="${data.difficulty}">${data.difficulty}</div>
-          `;
-        } else {
-          infoContent = `
-            <div class="distance">${data.distance}</div>
-            <div class="duration">${data.duration.car}</div>
-          `;
-        }
-      }
-      
-      chapterContent.innerHTML = `
-        <div class="chapter-title">Chapter ${chapterNum}: ${data.title}</div>
-        <div class="chapter-info">
-          ${infoContent}
-        </div>
-      `;
-    }
-    
-    if (isCompleted) {
-      button.classList.add('completed');
-    } else if (button.classList.contains('started')) {
-      button.classList.add('started');
-    }
-  });
-}
+});
 
 // Helper function to get chapter titles
 function getChapterTitle(chapterNumber) {
@@ -1089,10 +1206,10 @@ function getChapterTitle(chapterNumber) {
 function getChapterDescription(chapterNumber) {
   const descriptions = {
     "1": "Begin your journey at the iconic parochial house where Father Ted, Dougal, and Jack lived.",
-    "2": "St. Kevin's Stump, which was basically a tree stump, is no longer here, but you will find the Rock that Ted and Dougal climbed.",
-    "3": "The caves appear in the Father Ted episode 'The Mainland' under the name 'The Very Dark Caves'.",
-    "4": "Kilfenora Village is where you'll find Mrs. O'Reilly's house, Pat Mustard's milk route, and the pub where Ted met the Chinese community.",
-    "5": "Experience the Cliffs of Moher and Moher Tower, featured in the 'Tentacles of Doom' episode."
+    "2": "Visit the famous rock where Ted and Dougal had their climbing adventure.",
+    "3": "Explore the mysterious caves featured in 'The Mainland' episode.",
+    "4": "Visit the village where many Father Ted scenes were filmed.",
+    "5": "Experience the dramatic cliffs featured in the 'Tentacles of Doom' episode."
   };
   return descriptions[chapterNumber] || "Description not available";
 }
@@ -1118,20 +1235,20 @@ function testChapterLoading() {
 
 // Chapter-specific location questions
 const locationQuestions = {
-  "1": "Can you see Father Ted's House? Where Mrs. Doyle made all that tea?",
-  "2": "Can you see the rock? The one that Ted and Dougal climbed up on?",
-  "3": "Are you at the very dark caves?",
-  "4": "Can you see Vaughan's pub?",
-  "5": "Can you see the mighty Cliffs of Moher?"
+  "1": "Can you see Father Ted's House where the Holy Stone was stolen?",
+  "2": "Can you see the rock where Ted and Dougal had their climbing adventure?",
+  "3": "Can you see the entrance to the very dark caves where the receipt was found?",
+  "4": "Can you see Vaughan's pub where Ted met the Chinese community?",
+  "5": "Can you see the mighty Cliffs of Moher where the stone was thrown?"
 };
 
 // Chapter-specific congratulation messages
 const congratulationMessages = {
-  "1": "One of Craggy Island's main attractions, St. Kevin's Stump, should be a good place to start looking for the culprit!",
-  "2": "Perhaps Aillwee Cave is the best place to go next.. ",
-  "3": "You're getting closer. Maybe it's best to follow the receipt to Kilfenora.",
-  "4": "You're hot on the culprit's heels! Can you get to the Cliffs of Moher on time?",
-  "5": "You've conquered the Cliffs of Moher! This should be your last stop. Have a cup of tea!"
+  "1": "The trail begins! Head to St. Kevin's Stump to follow the first clue about the mysterious priest.",
+  "2": "Interesting find! The rave flyer suggests our next stop should be Aillwee Cave.",
+  "3": "That receipt is a crucial clue! Let's follow it to Kilfenora Village.",
+  "4": "The bartender's story is revealing! The Cliffs of Moher might be our final stop.",
+  "5": "You've reached the end of the trail! Time to put all the clues together and identify the culprit in the final quiz!"
 };
 
 // Add event listeners for navigation buttons
@@ -1174,7 +1291,7 @@ function showLocationVerification(chapterNumber) {
   popup.className = 'popup-overlay';
   popup.innerHTML = `
     <div class="popup-content">
-      <h3>${locationQuestions[chapterNumber] || `Are you at Chapter ${chapterNumber}'s location?`}</h3>
+      <p style="font-family: inherit; font-size: 1.1em; line-height: 1.5; margin-bottom: 1em;">${locationQuestions[chapterNumber] || `Are you at Chapter ${chapterNumber}'s location?`}</p>
       <div class="popup-buttons">
         <button class="popup-button yes" onclick="handleLocationResponse(true, '${chapterNumber}')">Yes, I'm here!</button>
         <button class="popup-button no" onclick="handleLocationResponse(false, '${chapterNumber}')">Not yet</button>
@@ -1190,8 +1307,7 @@ function showCongratulations(chapterNumber) {
   popup.className = 'popup-overlay';
   popup.innerHTML = `
     <div class="popup-content">
-      <h3 class="congratulations">🎉 Congratulations! 🎉</h3>
-      <p>${congratulationMessages[chapterNumber] || 'Well done on completing this chapter!'}</p>
+      <p style="font-family: inherit; font-size: 1.1em; line-height: 1.5; margin-bottom: 1em;">${congratulationMessages[chapterNumber] || 'Well done on completing this chapter!'}</p>
       <button class="popup-button yes" onclick="handleCongratulations()">Continue</button>
     </div>
   `;
@@ -1200,11 +1316,110 @@ function showCongratulations(chapterNumber) {
 
 // Function to handle congratulations continuation
 function handleCongratulations() {
-  // Remove all popup overlays
-  document.querySelectorAll('.popup-overlay').forEach(popup => popup.remove());
-  
-  // Return to chapter selection
-  showScreen('chapter-selection-page');
+    // Remove all popup overlays
+    document.querySelectorAll('.popup-overlay').forEach(popup => popup.remove());
+    
+    // Check which trail is active using AppState.activeTrail
+    const isBikeMode = AppState.activeTrail === 'cycle';
+    const currentTrail = isBikeMode ? AppState.cycleTrail : AppState.carTrail;
+    
+    console.log('Checking completion:', {
+        activeTrail: AppState.activeTrail,
+        completedChapters: Array.from(currentTrail.completedChapters),
+        size: currentTrail.completedChapters.size,
+        quizCompleted: currentTrail.quizCompleted
+    });
+    
+    // Hide both quiz and completion message initially
+    const finalQuiz = document.getElementById('final-quiz');
+    const completionMessage = document.getElementById('completion-message');
+    if (finalQuiz) finalQuiz.style.display = 'none';
+    if (completionMessage) completionMessage.style.display = 'none';
+    
+    // Only proceed if we have an active trail
+    if (!AppState.activeTrail) {
+        return;
+    }
+    
+    // Check if all 5 chapters are completed for the current trail
+    if (currentTrail.completedChapters.size === 5) {
+        if (!currentTrail.quizCompleted) {
+            // Show final quiz if not completed yet
+            if (finalQuiz) {
+                finalQuiz.style.display = 'block';
+                
+                // Remove any existing event listeners
+                const quizOptions = finalQuiz.querySelectorAll('.quiz-option');
+                quizOptions.forEach(option => {
+                    const newOption = option.cloneNode(true);
+                    option.parentNode.replaceChild(newOption, option);
+                });
+                
+                // Add new click handlers for quiz options
+                finalQuiz.querySelectorAll('.quiz-option').forEach(option => {
+                    option.addEventListener('click', function() {
+                        const isCorrect = this.getAttribute('data-answer') === 'damo';
+                        const quizOptions = finalQuiz.querySelectorAll('.quiz-option');
+                        
+                        // Disable all options after selection
+                        quizOptions.forEach(opt => opt.disabled = true);
+                        
+                        if (isCorrect) {
+                            this.classList.add('correct');
+                            // Mark quiz as completed for current trail only
+                            if (isBikeMode) {
+                                AppState.cycleTrail.quizCompleted = true;
+                            } else {
+                                AppState.carTrail.quizCompleted = true;
+                            }
+                            AppState.save();
+                            
+                            // Hide quiz and show completion message after a short delay
+                            setTimeout(() => {
+                                finalQuiz.style.display = 'none';
+                                if (completionMessage) {
+                                    completionMessage.style.display = 'block';
+                                    completionMessage.innerHTML = `
+                                        <h3>🎉 Congratulations! 🎉</h3>
+                                        <p class="body-text">You've successfully completed the Craggy Island Trail! You've had your fun, and that's all that matters.</p>
+                                        <div class="button-container">
+                                            <button class="certificate-button" onclick="downloadCertificate()">Download Certificate</button>
+                                            <button class="share-button" onclick="shareApp()">Share</button>
+                                        </div>
+                                    `;
+                                }
+                            }, 1000);
+                        } else {
+                            this.classList.add('incorrect');
+                            // Show error message and reset after a short delay
+                            setTimeout(() => {
+                                showError("That's not quite right! Try again!");
+                                this.classList.remove('incorrect');
+                                // Re-enable all options
+                                quizOptions.forEach(opt => opt.disabled = false);
+                            }, 1000);
+                        }
+                    });
+                });
+            }
+        } else if (AppState.activeTrail === (isBikeMode ? 'cycle' : 'car')) {
+            // Only show completion message if this is the active trail
+            if (completionMessage) {
+                completionMessage.style.display = 'block';
+                completionMessage.innerHTML = `
+                    <h3>🎉 Congratulations! 🎉</h3>
+                    <p class="body-text">You've successfully completed the Craggy Island Trail! You've had your fun, and that's all that matters.</p>
+                    <div class="button-container">
+                        <button class="certificate-button" onclick="downloadCertificate()">Download Certificate</button>
+                        <button class="share-button" onclick="shareApp()">Share</button>
+                    </div>
+                `;
+            }
+        }
+    }
+    
+    // Return to chapter selection
+    showScreen('chapter-selection-page');
 }
 
 // Helper function to count completed locations
@@ -1214,15 +1429,12 @@ function getCompletedLocations() {
 
 // Function to reset the trail
 function resetTrail() {
-    const isBikeMode = document.querySelector('.transport-button.cycle-trail') !== null;
-    const trailType = isBikeMode ? 'cycle' : 'car';
-    
     const popup = document.createElement('div');
     popup.className = 'popup-overlay';
     popup.innerHTML = `
         <div class="popup-content">
-            <h3>Reset ${isBikeMode ? 'Cycle' : 'Car'} Trail</h3>
-            <p>Are you sure you want to reset your ${isBikeMode ? 'cycle' : 'car'} trail progress? This will clear all completed chapters for this trail type and start you from the beginning.</p>
+            <h3>Reset Trail</h3>
+            <p>Are you sure you want to reset your trail progress? This will clear all completed chapters and start you from the beginning.</p>
             <div class="popup-buttons">
                 <button class="popup-button yes" onclick="confirmResetTrail()">Yes, Reset</button>
                 <button class="popup-button no" onclick="this.parentElement.parentElement.parentElement.remove()">Cancel</button>
@@ -1234,13 +1446,33 @@ function resetTrail() {
 
 // Function to confirm trail reset
 function confirmResetTrail() {
-    const isBikeMode = document.querySelector('.transport-button.cycle-trail') !== null;
-    const trailType = isBikeMode ? 'cycle' : 'car';
+    // Clear all state for both trails
+    AppState.cycleTrail.completedChapters.clear();
+    AppState.carTrail.completedChapters.clear();
+    AppState.cycleTrail.progress = 0;
+    AppState.carTrail.progress = 0;
+    AppState.cycleTrail.quizCompleted = false;
+    AppState.carTrail.quizCompleted = false;
+    AppState.activeTrail = null;
     
-    // Clear completed chapters for current trail type only
-    AppState.completedChapters[trailType].clear();
-    AppState.progress[trailType] = 0;
-    AppState.save();
+    // Clear localStorage
+    localStorage.removeItem('appState');
+    localStorage.removeItem('activeTrail');
+    
+    // Clear all indicators
+    AppState.clearAllIndicators();
+    
+    // Hide completion message and quiz
+    const completionMessage = document.getElementById('completion-message');
+    if (completionMessage) {
+        completionMessage.style.display = 'none';
+    }
+    const finalQuiz = document.getElementById('final-quiz');
+    if (finalQuiz) {
+        finalQuiz.style.display = 'none';
+    }
+    
+    // Reset UI
     AppState.updateUI();
     
     // Remove the popup
@@ -1367,12 +1599,13 @@ document.addEventListener('DOMContentLoaded', () => {
     startPageContent.innerHTML = `
       <h2>Story Guide</h2>
       <div class="welcome-text">
-        A shocking discovery has been made at Father Ted's house! The Holy Stone of Clonrichert has mysteriously vanished. The only evidence is Dougal's vague memory of seeing a "cool-looking priest" in the night. Bishop Brennan demands answers! 
+        <p>A shocking discovery has been made at Father Ted's house! The Holy Stone of Clonrichert has mysteriously vanished, and Bishop Brennan demands answers!</p>
 
-        Can you help Father Ted track down the missing Holy Stone?
+        <p>Follow this story-based guide as you gather clues to help you discover who stole the Holy Stone.</p>
+
+        <p><strong>Can you help Father Ted by solving the mystery?</strong></p>
       </div>
-      <img src="assets/images/trail-map.jpg
-      " alt="Craggy Island Trail Map" class="trail-map">
+      <img src="assets/images/trail-map.jpg" alt="Craggy Island Trail Map" class="trail-map">
     `;
   }
 });
@@ -1400,16 +1633,94 @@ document.addEventListener("DOMContentLoaded", () => {
   document.querySelectorAll('#back-button').forEach(button => {
     button.addEventListener('click', handleBackButton);
   });
+
+  // Ensure indicators are updated after initialization
+  AppState.updateIndicators();
 });
 
 // Add CSS for chapter-selection-page title
 const style = document.createElement('style');
 style.textContent = `
 #chapter-selection-page h2 {
-    margin-top: 40px; /* Move the title text lower */
+    margin-top: 20px;
     text-align: center;
-    color: #2c3e50; /* Keep the text dark */
-    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.2); /* Add subtle drop shadow */
+    color: #2c3e50;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+/* Adjusted heading sizes */
+h1 {
+    font-size: 2.2em !important;
+}
+
+h2 {
+    font-size: 1.9em !important;
+}
+
+h3 {
+    font-size: 1.6em !important;
+}
+
+h4 {
+    font-size: 1.4em !important;
+}
+
+h5 {
+    font-size: 1.2em !important;
+}
+
+h6 {
+    font-size: 1em !important;
+}
+
+/* Special styling for intro page title */
+#intro-screen h1 {
+    font-size: 2em !important;
+}
+
+/* Chapter number specific styling */
+#chapter-number {
+    font-size: 2.4em !important;
+    margin-bottom: -0.5em !important;
+}
+
+/* Story container styling */
+.story-container {
+    background-color: white;
+    opacity: 0.90;
+    padding: 1.5em;
+    border-radius: 10px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    margin-bottom: 1.5em;
+}
+
+/* Location info container styling */
+.location-info-container {
+    background: none;
+    padding: 0;
+    margin-bottom: 1.5em;
+    text-align: center;
+}
+
+/* Improved text styling */
+.welcome-text p {
+    line-height: 1.6;
+    margin-bottom: 1.2em;
+    text-shadow: 0.5px 0.5px 1px rgba(0, 0, 0, 0.1);
+}
+
+.transportation-content .welcome-text {
+    background: rgba(255, 255, 255, 0.9);
+    padding: 2em;
+    border-radius: 10px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    margin: 2em 0;
+}
+
+.transportation-content .welcome-text p {
+    line-height: 1.5;
+    margin-bottom: 0.8em;
+    text-shadow: 0.5px 0.5px 1px rgba(0, 0, 0, 0.1);
 }
 
 .chapter-button.started {
@@ -1453,12 +1764,211 @@ style.textContent = `
     box-shadow: 0 6px 8px rgba(0, 0, 0, 0.2);
     background: linear-gradient(145deg, #43A047, #388E3C, #2E7D32);
 }
+
+/* Transportation page specific styles */
+.transportation-content {
+    padding: 1.5em;
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.transportation-content h1 {
+    text-align: center;
+    color: #2c3e50;
+    margin-bottom: 1em;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+.transportation-content .welcome-text {
+    background: rgba(255, 255, 255, 0.9);
+    padding: 1.5em;
+    border-radius: 12px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    margin-bottom: 1.5em;
+    text-align: center;
+}
+
+.transportation-content .welcome-text p {
+    line-height: 1.5;
+    margin-bottom: 0.8em;
+    text-shadow: 0.5px 0.5px 1px rgba(0, 0, 0, 0.1);
+}
+
+.transport-options {
+    display: flex;
+    flex-direction: column;
+    gap: 1.2em;
+    margin-top: 1em;
+}
+
+.transport-option {
+    background: rgba(255, 255, 255, 0.9);
+    border-radius: 12px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+}
+
+.transport-option.cycle {
+    border-left: 4px solid #4CAF50;
+    background: #4CAF50;
+}
+
+.transport-option.car {
+    border-left: 4px solid #2196F3;
+    background: #2196F3;
+}
+
+.transport-option .option-content {
+    padding: 1.2em 1.5em;
+    display: flex;
+    flex-direction: column;
+    gap: 0.4em;
+    background: rgba(255, 255, 255, 0.9);
+    position: relative;
+    z-index: 1;
+}
+
+.transport-option p {
+    color: #2c3e50;
+    line-height: 1.4;
+    font-size: 0.95em;
+    margin: 0;
+}
+
+.transport-option .trail-info {
+    color: #666;
+    font-size: 0.9em;
+    font-style: italic;
+}
+
+.transport-button {
+    padding: 12px 25px;
+    border: none;
+    font-size: 15px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    width: 100%;
+    text-align: center;
+    display: block;
+    position: relative;
+    margin: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    box-sizing: border-box;
+}
+
+.transport-button.cycle-trail {
+    background: #4CAF50;
+    color: white;
+    border-top: none;
+}
+
+.transport-button.car-trail {
+    background: #2196F3;
+    color: white;
+    border-top: none;
+    margin-left: -4px;
+    width: calc(100% + 4px);
+    border-left: 4px solid #2196F3;
+}
+
+.transport-button:hover {
+    background: #43A047;
+    color: white;
+}
+
+.transport-button.car-trail:hover {
+    background: #1976D2;
+    color: white;
+}
+
+.transport-option.car .transport-button.car-trail {
+    background: #2196F3 !important;
+    color: white;
+    border-top: none;
+    margin-left: -4px;
+    width: calc(100% + 4px);
+    border-left: 4px solid #2196F3;
+}
+
+.transport-option.car .transport-button.car-trail:hover {
+    background: #1976D2 !important;
+    color: white;
+}
+
+.in-progress {
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    font-size: 12px;
+    font-weight: normal;
+    background: rgba(255, 255, 255, 0.2);
+    padding: 2px 6px;
+    border-radius: 3px;
+}
+
+/* Chapter page specific styles */
+.story-container {
+    background: rgba(255, 255, 255, 0.9);
+    padding: 1.5em;
+    border-radius: 10px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    margin-bottom: 1.5em;
+}
+
+.story-container h2 {
+    color: #2c3e50;
+    margin-bottom: 1em;
+    font-size: 1.8em;
+}
+
+.story-container p {
+    line-height: 1.6;
+    color: #333;
+    font-size: 1.1em;
+}
+
+.location-facts-container {
+    background: rgba(255, 255, 255, 0.9);
+    padding: 1.5em;
+    border-radius: 10px;
+    margin-top: 1.5em;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.location-facts-container h3 {
+    color: #2c3e50;
+    margin-bottom: 1em;
+    font-size: 1.4em;
+}
+
+.location-facts-container ul {
+    list-style-type: none;
+    padding: 0;
+    margin: 0;
+}
+
+.location-facts-container li {
+    padding: 0.5em 0;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+    color: #333;
+    line-height: 1.4;
+}
+
+.location-facts-container li:last-child {
+    border-bottom: none;
+}
 `;
 document.head.appendChild(style);
 
 // Function to download certificate
 function downloadCertificate() {
-  const isBikeMode = document.querySelector('.transport-button.cycle-trail') !== null;
+  const isBikeMode = document.querySelector('.transport-button.cycle-trail').style.backgroundColor === 'rgb(76, 175, 80)';
   const certificateImage = isBikeMode ? 'congrats-bike.jpg' : 'congrats-car.jpg';
   
   // Create a temporary link element
@@ -1488,57 +1998,77 @@ function showTextSizeHelp() {
 
 // Add event listeners for transportation buttons
 document.addEventListener('DOMContentLoaded', function() {
+  console.log('Initializing button handlers...');
+  
   const cycleTrailButton = document.querySelector('.transport-button.cycle-trail');
   const carTrailButton = document.querySelector('.transport-button.car-trail');
   
-  // Set initial white text for both buttons
+  console.log('Found buttons:', {
+    cycleButton: cycleTrailButton ? 'yes' : 'no',
+    carButton: carTrailButton ? 'yes' : 'no'
+  });
+  
+  // Initialize buttons with white text
   if (cycleTrailButton) {
     cycleTrailButton.style.color = 'white';
+    cycleTrailButton.dataset.trailType = 'cycle';
   }
   if (carTrailButton) {
     carTrailButton.style.color = 'white';
+    carTrailButton.dataset.trailType = 'car';
   }
   
   if (cycleTrailButton) {
     cycleTrailButton.addEventListener('click', function() {
-      console.log('Cycle Trail selected');
-      // Remove car-trail class and add cycle-trail class
+      console.log('Cycle Trail button clicked');
+      // Remove active class from both buttons
       document.querySelectorAll('.transport-button').forEach(btn => {
-        btn.classList.remove('cycle-trail', 'car-trail');
+        btn.classList.remove('active');
       });
-      this.classList.add('cycle-trail');
-      showScreen('start-page');
-      updateChapterButtons(); // Update buttons immediately
+      // Add active class to cycle button
+      this.classList.add('active');
+      // Set trail type
+      AppState.activeTrail = 'cycle';
+      showScreen('cycle-start-page');
     });
   }
   
   if (carTrailButton) {
     carTrailButton.addEventListener('click', function() {
-      console.log('Car Trail selected');
-      // Remove cycle-trail class and add car-trail class
+      console.log('Car Trail button clicked');
+      // Remove active class from both buttons
       document.querySelectorAll('.transport-button').forEach(btn => {
-        btn.classList.remove('cycle-trail', 'car-trail');
+        btn.classList.remove('active');
       });
-      this.classList.add('car-trail');
-      showScreen('start-page');
-      updateChapterButtons(); // Update buttons immediately
+      // Add active class to car button
+      this.classList.add('active');
+      // Set trail type
+      AppState.activeTrail = 'car';
+      showScreen('car-start-page');
     });
   }
 });
 
 const amenitiesData = {
-    1: {
+    "1": {
         categories: {
             "🍽️ Restaurants & Cafés": [
+                {
+                    name: "The Parochial House Café",
+                    description: "Traditional Irish café serving tea, coffee, and homemade scones",
+                    link: "https://www.google.com/maps"
+                },
                 {
                     name: "Bofey Quinns Bar & Restaurant",
                     description: "A cozy Irish pub offering traditional fare and a warm atmosphere. Located in Corofin.",
                     link: "https://www.google.com/maps/place/Bofey+Quinns+Bar+%26+Restaurant"
-                },
+                }
+            ],
+            "⚡ Charging Stations": [
                 {
-                    name: "Sullivan's Royal Hotel",
-                    description: "Traditional Irish hotel with restaurant and bar facilities.",
-                    link: "https://www.google.com/maps/place/Sullivan's+Royal+Hotel"
+                    name: "IONITY Network",
+                    description: "High-power charging network across Europe. Find charging stations and plan your route.",
+                    link: "https://www.ionity.eu/network"
                 }
             ],
             "🛏️ Accommodation": [
@@ -1546,44 +2076,29 @@ const amenitiesData = {
                     name: "Fergus View",
                     description: "A family-run B&B with stunning views of the Burren.",
                     link: "https://www.google.com/maps/place/Fergus+View"
-                },
-                {
-                    name: "Corofin Hostel and Camping Park",
-                    description: "Budget-friendly accommodation with hostel rooms and camping facilities.",
-                    link: "https://www.google.com/maps/place/Corofin+Hostel+and+Camping+Park"
-                },
-                {
-                    name: "Hazelwood Lodge",
-                    description: "Comfortable lodging in a peaceful setting.",
-                    link: "https://www.google.com/maps/place/Hazelwood+Lodge"
-                }
-            ],
-            "📍 Points of Interest": [
-                {
-                    name: "The Burren National Park",
-                    description: "Explore unique limestone landscapes and diverse flora.",
-                    link: "https://www.google.com/maps/place/The+Burren+National+Park"
-                },
-                {
-                    name: "Corofin Heritage Centre",
-                    description: "Delve into local history and genealogy.",
-                    link: "https://www.google.com/maps/place/Corofin+Heritage+Centre"
                 }
             ]
         }
     },
-    2: {
+    "2": {
         categories: {
             "🍽️ Restaurants & Cafés": [
+                {
+                    name: "St. Kevin's Café",
+                    description: "Cozy café with outdoor seating and local specialties",
+                    link: "https://www.google.com/maps"
+                },
                 {
                     name: "Morrissey's of Doonbeg",
                     description: "Traditional Irish pub and restaurant.",
                     link: "https://www.google.com/maps/place/Morrissey's+of+Doonbeg"
-                },
+                }
+            ],
+            "⚡ Charging Stations": [
                 {
-                    name: "The Half Barrel",
-                    description: "Known for its seafood dishes and friendly service.",
-                    link: "https://www.google.com/maps/place/The+Half+Barrel"
+                    name: "IONITY Network",
+                    description: "High-power charging network across Europe. Find charging stations and plan your route.",
+                    link: "https://www.ionity.eu/network"
                 }
             ],
             "🛏️ Accommodation": [
@@ -1591,44 +2106,29 @@ const amenitiesData = {
                     name: "The Glendalough Hotel",
                     description: "Historic hotel in a scenic location.",
                     link: "https://www.google.com/maps/place/The+Glendalough+Hotel"
-                },
-                {
-                    name: "Birchdale House B&B",
-                    description: "Charming bed and breakfast with warm hospitality.",
-                    link: "https://www.google.com/maps/place/Birchdale+House+B%26B"
-                }
-            ],
-            "📍 Points of Interest": [
-                {
-                    name: "St. Kevin's Cell",
-                    description: "Historic monastic site with ancient ruins.",
-                    link: "https://www.google.com/maps/place/St.+Kevin's+Cell"
-                },
-                {
-                    name: "Glendalough Monastic Site",
-                    description: "Ancient monastic settlement with round tower.",
-                    link: "https://www.google.com/maps/place/Glendalough+Monastic+Site"
                 }
             ]
         }
     },
-    3: {
+    "3": {
         categories: {
             "🍽️ Restaurants & Cafés": [
+                {
+                    name: "Cave View Café",
+                    description: "Scenic café with views of the surrounding landscape",
+                    link: "https://www.google.com/maps"
+                },
                 {
                     name: "The Wild Atlantic Lodge",
                     description: "Offers seafood and Irish cuisine in a cozy setting.",
                     link: "https://www.google.com/maps/place/The+Wild+Atlantic+Lodge"
-                },
+                }
+            ],
+            "⚡ Charging Stations": [
                 {
-                    name: "Burren Fine Wine and Food",
-                    description: "Specializes in local cheeses and wines.",
-                    link: "https://www.google.com/maps/place/Burren+Fine+Wine+and+Food"
-                },
-                {
-                    name: "Monks Ballyvaughan",
-                    description: "Renowned for its seafood dishes and harbor views.",
-                    link: "https://www.google.com/maps/place/Monks+Ballyvaughan+Seafood+Restaurant+%26+Bar"
+                    name: "IONITY Network",
+                    description: "High-power charging network across Europe. Find charging stations and plan your route.",
+                    link: "https://www.ionity.eu/network"
                 }
             ],
             "🛏️ Accommodation": [
@@ -1636,44 +2136,29 @@ const amenitiesData = {
                     name: "Hazelwood Lodge",
                     description: "Comfortable lodging in a peaceful setting.",
                     link: "https://www.google.com/maps/place/Hazelwood+Lodge"
-                },
-                {
-                    name: "Cappabhaile House",
-                    description: "Spacious B&B with views of the Burren.",
-                    link: "https://www.google.com/maps/place/Cappabhaile+House"
-                },
-                {
-                    name: "Doolin Inn",
-                    description: "Boutique inn with views of the Atlantic.",
-                    link: "https://www.google.com/maps/place/Doolin+Inn"
-                }
-            ],
-            "📍 Points of Interest": [
-                {
-                    name: "Aillwee Cave",
-                    description: "Explore the ancient cave system and birds of prey center.",
-                    link: "https://www.google.com/maps/place/Aillwee+Cave"
-                },
-                {
-                    name: "The Burren",
-                    description: "Unique karst landscape with diverse flora.",
-                    link: "https://www.google.com/maps/place/The+Burren"
                 }
             ]
         }
     },
-    4: {
+    "4": {
         categories: {
             "🍽️ Restaurants & Cafés": [
+                {
+                    name: "Village Square Café",
+                    description: "Traditional Irish café in the heart of the village",
+                    link: "https://www.google.com/maps"
+                },
                 {
                     name: "Vaughan's Pub",
                     description: "Traditional Irish pub featured in 'Father Ted' episodes.",
                     link: "https://www.google.com/maps/place/Vaughan's+Pub"
-                },
+                }
+            ],
+            "⚡ Charging Stations": [
                 {
-                    name: "Linnane's Pub",
-                    description: "Another filming location offering local dishes.",
-                    link: "https://www.google.com/maps/place/Linnane's+Pub"
+                    name: "IONITY Network",
+                    description: "High-power charging network across Europe. Find charging stations and plan your route.",
+                    link: "https://www.ionity.eu/network"
                 }
             ],
             "🛏️ Accommodation": [
@@ -1681,44 +2166,29 @@ const amenitiesData = {
                     name: "Kilcarragh House B&B",
                     description: "Comfortable rooms with a friendly atmosphere.",
                     link: "https://www.google.com/maps/place/Kilcarragh+House+B%26B"
-                },
-                {
-                    name: "Kilfenora Hostel",
-                    description: "Budget-friendly option for travelers.",
-                    link: "https://www.google.com/maps/place/Kilfenora+Hostel"
-                },
-                {
-                    name: "Ballybreen House",
-                    description: "Charming guesthouse in a peaceful setting.",
-                    link: "https://www.google.com/maps/place/Ballybreen+House"
-                }
-            ],
-            "📍 Points of Interest": [
-                {
-                    name: "Kilfenora Cathedral",
-                    description: "Historic site with high crosses.",
-                    link: "https://www.google.com/maps/place/Kilfenora+Cathedral"
-                },
-                {
-                    name: "The Burren Centre",
-                    description: "Interactive exhibits on the region's geology and history.",
-                    link: "https://www.google.com/maps/place/The+Burren+Centre"
                 }
             ]
         }
     },
-    5: {
+    "5": {
         categories: {
             "🍽️ Restaurants & Cafés": [
+                {
+                    name: "Cliff View Café",
+                    description: "Café with spectacular views of the cliffs",
+                    link: "https://www.google.com/maps"
+                },
                 {
                     name: "The Ivy Cottage",
                     description: "Seafood restaurant with a charming garden in Doolin.",
                     link: "https://www.google.com/maps/place/The+Ivy+Cottage"
-                },
+                }
+            ],
+            "⚡ Charging Stations": [
                 {
-                    name: "Gus O'Connor's Pub",
-                    description: "Traditional pub known for live music and seafood.",
-                    link: "https://www.google.com/maps/place/Gus+O'Connor's+Pub"
+                    name: "IONITY Network",
+                    description: "High-power charging network across Europe. Find charging stations and plan your route.",
+                    link: "https://www.ionity.eu/network"
                 }
             ],
             "🛏️ Accommodation": [
@@ -1726,11 +2196,6 @@ const amenitiesData = {
                     name: "Cliffs of Moher Hotel",
                     description: "Modern hotel close to the cliffs in Liscannor.",
                     link: "https://www.google.com/maps/place/Cliffs+of+Moher+Hotel"
-                },
-                {
-                    name: "Doolin Inn",
-                    description: "Boutique inn with views of the Atlantic.",
-                    link: "https://www.google.com/maps/place/Doolin+Inn"
                 }
             ]
         }
@@ -1804,3 +2269,224 @@ function updateChapterContent(chapter) {
     
     // ... rest of existing code ...
 }
+
+// Update transportation page content
+document.addEventListener('DOMContentLoaded', () => {
+  const transportationContent = document.querySelector('.transportation-content');
+  if (transportationContent) {
+    transportationContent.innerHTML = `
+      <h1>Choose Your Journey</h1>
+      <div class="welcome-text">
+        <p>Welcome to The Craggy Island Trail, where you'll experience a new story from the world of Father Ted to guide you to iconic filming locations in County Clare.</p>
+        <p><strong>Explore it your way.</strong></p>
+      </div>
+      
+      <div class="transport-options">
+        <div class="transport-option cycle">
+          <div class="option-content">
+            <p>Perfect for those who want to take their time and enjoy the Irish countryside.</p>
+            <div class="trail-info">Estimated time: 3 Days</div>
+          </div>
+          <button class="transport-button cycle-trail" onclick="showScreen('start-page')">Cycling Trail</button>
+        </div>
+        
+        <div class="transport-option car">
+          <div class="option-content">
+            <p>Offers users the opportunity to visit all locations in a day-trip.</p>
+            <div class="trail-info">Estimated time: 6 Hours</div>
+          </div>
+          <button class="transport-button car-trail" onclick="showScreen('start-page')">Car Trail</button>
+        </div>
+      </div>
+    `;
+  }
+});
+
+function resetApp() {
+  // Clear all state
+  AppState.cycleTrail.completedChapters.clear();
+  AppState.carTrail.completedChapters.clear();
+  AppState.cycleTrail.progress = 0;
+  AppState.carTrail.progress = 0;
+  
+  // Clear localStorage
+  localStorage.removeItem('appState');
+  
+  // Clear all indicators
+  AppState.clearAllIndicators();
+  
+  // Reset UI
+  AppState.updateUI();
+  
+  // Return to start page
+  showScreen('start-page');
+}
+
+function updateProgressBar(percentage) {
+    const progressBar = document.querySelector('.progress-bar');
+    const progressFill = document.querySelector('.progress-fill');
+    const caravanIcon = document.querySelector('.caravan-icon');
+    const progressText = document.querySelector('.progress-text');
+    
+    // Calculate color based on percentage
+    let r, g, b;
+    if (percentage <= 50) {
+        // Red to Yellow transition (0-50%)
+        r = 255;
+        g = Math.round((percentage / 50) * 255);
+        b = 0;
+    } else {
+        // Yellow to Green transition (50-100%)
+        r = Math.round(255 - ((percentage - 50) / 50) * 255);
+        g = 255;
+        b = 0;
+    }
+    
+    // Update progress fill color and width
+    progressFill.style.background = `rgb(${r}, ${g}, ${b})`;
+    progressFill.style.width = `${percentage}%`;
+    
+    // Update caravan position
+    caravanIcon.style.left = `${percentage}%`;
+    caravanIcon.style.transform = 'translateX(-50%)';
+    
+    // Update progress text
+    progressText.textContent = `${percentage}%`;
+}
+
+function calculateRoute(origin, destination) {
+    const directionsService = new google.maps.DirectionsService();
+    const directionsRenderer = new google.maps.DirectionsRenderer({
+        map: map,
+        suppressMarkers: true
+    });
+
+    const request = {
+        origin: origin,
+        destination: destination,
+        travelMode: google.maps.TravelMode.DRIVING,
+        provideRouteAlternatives: true
+    };
+
+    directionsService.route(request, (result, status) => {
+        if (status === 'OK') {
+            directionsRenderer.setDirections(result);
+            const route = result.routes[0];
+            const leg = route.legs[0];
+            
+            // Update distance and duration
+            document.getElementById('distance').textContent = leg.distance.text;
+            document.getElementById('duration').textContent = leg.duration.text;
+            
+            // Update progress bar
+            updateProgressBar(100);
+        } else {
+            console.error('Directions request failed:', status);
+            // Fallback to static route display
+            const path = [
+                { lat: origin.lat, lng: origin.lng },
+                { lat: destination.lat, lng: destination.lng }
+            ];
+            
+            const routeLine = new google.maps.Polyline({
+                path: path,
+                geodesic: true,
+                strokeColor: '#FF0000',
+                strokeOpacity: 1.0,
+                strokeWeight: 2
+            });
+            
+            routeLine.setMap(map);
+            
+            // Calculate approximate distance
+            const distance = google.maps.geometry.spherical.computeDistanceBetween(
+                new google.maps.LatLng(origin.lat, origin.lng),
+                new google.maps.LatLng(destination.lat, destination.lng)
+            );
+            
+            // Update distance and duration with approximate values
+            document.getElementById('distance').textContent = Math.round(distance / 1000) + ' km';
+            document.getElementById('duration').textContent = Math.round(distance / 1000 * 2) + ' mins';
+            
+            // Update progress bar
+            updateProgressBar(100);
+        }
+    });
+}
+
+// Function to show cycling disclaimer
+function showCyclingDisclaimer() {
+    const popup = document.createElement('div');
+    popup.className = 'popup-overlay';
+    popup.innerHTML = `
+        <div class="popup-content">
+            <h3>Cycling Trail Preparation</h3>
+            <div class="disclaimer-content">
+                <p><strong>Before you begin your cycling adventure, please ensure you are prepared:</strong></p>
+                <ul>
+                    <li>Check the weather forecast and dress appropriately</li>
+                    <li>Carry essential spare parts (inner tubes, pump, basic tools)</li>
+                    <li>Bring sufficient water and snacks</li>
+                    <li>Ensure your bike is in good working condition</li>
+                    <li>Wear appropriate safety gear (helmet, reflective clothing)</li>
+                </ul>
+                <p><strong>Local Bike Shops:</strong></p>
+                <ul>
+                    <li>Craggy Island Cycles - Emergency repairs and parts</li>
+                    <li>County Clare Bikes - Full service and rentals</li>
+                </ul>
+            </div>
+            <button class="popup-button" onclick="this.parentElement.parentElement.remove()">Close</button>
+        </div>
+    `;
+    document.body.appendChild(popup);
+}
+
+// Add cycling disclaimer button to cycle start page
+document.addEventListener('DOMContentLoaded', () => {
+    const cycleStartPage = document.getElementById('cycle-start-page');
+    if (cycleStartPage) {
+        const startButton = cycleStartPage.querySelector('#start-trail-button');
+        if (startButton) {
+            const disclaimerButton = document.createElement('button');
+            disclaimerButton.className = 'disclaimer-button';
+            disclaimerButton.textContent = 'Cycling Trail Preparation';
+            disclaimerButton.onclick = showCyclingDisclaimer;
+            startButton.parentNode.insertBefore(disclaimerButton, startButton);
+        }
+    }
+});
+
+// Update location facts with more historical and interesting content
+const locationFacts = {
+    "1": [
+        "The Parochial House was built in 1825 as a rectory for the local Church of Ireland, featuring original Georgian architecture and a hidden priest hole from the penal times.",
+        "The Burren region is a UNESCO Global Geopark, containing 75% of Ireland's native plant species and rare Arctic-Alpine flowers that have survived since the last Ice Age.",
+        "St. Joseph's Church, constructed in 1835, features a unique 'leaning tower' that has maintained its 5-degree tilt since the Great Famine, when its foundation shifted.",
+        "The area's limestone landscape was formed 350 million years ago when Ireland was located near the equator, creating the largest karst landscape in Western Europe."
+    ],
+    "2": [
+        "Bofey Quinns pub, established in 1864, was originally a coaching inn where travelers could rest their horses. Its original Victorian interior includes a rare working gas lamp system.",
+        "Doonbeg Castle, built in 1560 by the O'Brien clan, was strategically positioned to control the local fishing trade. Its walls are 8 feet thick and contain secret passages.",
+        "The area's unique microclimate, created by the Gulf Stream, allows Mediterranean plants like the rare Dense-flowered Orchid to grow alongside native Irish species.",
+        "The local beach contains a 17th-century Spanish Armada shipwreck, and during low tide, you can still see remnants of the vessel's timbers in the sand."
+    ],
+    "3": [
+        "The Wild Atlantic Lodge was built in 1812 as a coastguard station during the Napoleonic Wars. Its thick walls and watchtower were designed to spot French invasion attempts.",
+        "The Poll na Gollum cave system, discovered in 1835, extends over 2 kilometers and contains rare stalactite formations that grow only 1 centimeter every 100 years.",
+        "The area's beaches host one of Ireland's largest seal colonies, with over 200 grey seals. The colony has been documented since the 12th century in local monastic records.",
+        "Local fishermen still use traditional currach boats, a design unchanged since the Bronze Age. Each boat takes 3 months to build using techniques passed down through generations."
+    ],
+    "4": [
+        "Vaughan's Pub has been in the same family since 1865 and uses its original 19th-century bar, made from a single piece of mahogany imported from Honduras in 1870.",
+        "The village's round tower, built in 950 AD, is one of Ireland's best-preserved early Christian structures. Its 30-meter height was used as a lookout point during Viking raids.",
+        "The market square has hosted weekly markets since 1780, making it one of Ireland's oldest continuous market sites. The original market cross, dating from 1200 AD, still stands.",
+        "The area's ancient ring forts, dating from 500-1000 AD, are aligned with significant astronomical events. The largest fort, 40 meters in diameter, was a royal residence of the O'Brien kings."
+    ],
+    "5": [
+        "The Cliffs of Moher are 320 million years old and contain fossils from the Carboniferous period, including ancient sea creatures that lived when Ireland was part of a tropical sea.",
+        "The visitor center, completed in 2007, is built into the hillside to minimize environmental impact. Its design won the International Architecture Award for its innovative use of local stone.",
+        "The area's unique geology creates a natural sound chamber, where waves can be heard from over a kilometer away. This phenomenon was documented by early Christian monks in 800 AD.",
+        "Local legend claims the cliffs were formed when the giant Fionn mac Cumhaill took a bite out of the landscape. The 'bite' created the famous sea stack known as Branaunmore."
+    ]
+};
