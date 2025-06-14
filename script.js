@@ -1463,7 +1463,7 @@ function initializeSettings() {
     
     // Load saved settings or use defaults
     const savedVolume = localStorage.getItem('volume') || 0.6; // 60% default
-    const savedTextSize = localStorage.getItem('textSize') || 12; // 35% of max (24px)
+    const savedTextSize = localStorage.getItem('textSize') || 16; // 35% of range (12-24px)
     
     // Apply saved settings
     volumeSlider.value = savedVolume;
