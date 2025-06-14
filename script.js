@@ -5,6 +5,11 @@ let directionsService;
 let directionsRenderer;
 let userMarker;
 let navigationStack = []; // Stack to track navigation history
+let lastScreen = null; // Track the last screen
+let navigationHistory = ['intro-screen']; // Initialize with intro screen
+let previousScreen = null;
+let lastBackPressTime = 0;
+const DOUBLE_BACK_THRESHOLD = 2000; // 2 seconds in milliseconds
 
 // Define the navigation sequence
 const navigationSequence = {
@@ -16,7 +21,7 @@ const navigationSequence = {
   "chapter-selection-page": "start-page",
   "chapter-page": "chapter-selection-page",
   "arrival-page": "chapter-page",
-  "settings-page": "chapter-selection-page", // Changed from null to return to chapter selection
+  "settings-page": "chapter-selection-page",
   "more-from-ted-page": "chapter-selection-page"
 };
 
@@ -318,15 +323,11 @@ const AppState = {
   
   updateUI() {
     console.log('Updating UI...');
-    const progressBar = document.querySelector('.progress-bar');
-    if (progressBar) {
       const currentProgress = this.activeTrail === 'cycle' ? 
         this.cycleTrail.progress : 
         this.carTrail.progress;
-      progressBar.style.width = `${currentProgress}%`;
-      console.log('Updated progress bar:', currentProgress);
-      }
     
+    updateProgressBar(currentProgress);
     this.updateIndicators();
   }
 };
@@ -356,8 +357,11 @@ function saveProgress() {
 }
 
 // Function to show a specific screen
-function showScreen(screenId) {
-  console.log('Showing screen:', screenId);
+function showScreen(screenId, isBack = false) {
+  const currentScreen = document.querySelector('.screen.active');
+  if (currentScreen && currentScreen.id !== screenId && !isBack) {
+    navigationStack.push(currentScreen.id);
+  }
 
   // Hide all screens
   document.querySelectorAll('.screen').forEach(screen => {
@@ -394,11 +398,8 @@ function showScreen(screenId) {
     console.error('Screen not found:', screenId);
   }
   
-  // Update navigation stack
-  const previousScreen = navigationSequence[screenId];
-  if (previousScreen) {
-    navigationStack.push(previousScreen);
-  }
+  // Always re-initialize button handlers after navigation
+  setTimeout(initializeButtonHandlers, 0);
 }
 
 // Load GeoJSON data for the selected chapter
@@ -925,25 +926,31 @@ function showPrompt(scene) {
 
 // Back button handler
 function handleBackButton() {
-  const currentScreen = document.querySelector('.screen.active');
-  if (!currentScreen) return;
-
-  const previousScreen = navigationSequence[currentScreen.id];
-  console.log(`Current screen: ${currentScreen.id}, Previous screen: ${previousScreen}`);
-
-  if (previousScreen) {
-    showScreen(previousScreen);
+  const currentTime = Date.now();
+  const timeSinceLastPress = currentTime - lastBackPressTime;
+  
+  if (timeSinceLastPress < DOUBLE_BACK_THRESHOLD) {
+    // Double back detected - go to trail select page
+    showScreen('transportation-page', true);
+    lastBackPressTime = 0; // Reset the timer
   } else {
-    console.error('No previous screen defined for:', currentScreen.id);
+    // Single back press - normal navigation
+    if (navigationStack.length > 0) {
+      const previousScreen = navigationStack.pop();
+      showScreen(previousScreen, true);
+    } else {
+      showScreen('intro-screen', true);
+    }
+    lastBackPressTime = currentTime;
   }
 }
 
-// Update the settings page "Back" button handler
+// Initialize back button handlers
 document.addEventListener('DOMContentLoaded', () => {
-  const backButton = document.querySelector('#settings-page #back-button');
-  if (backButton) {
-    backButton.addEventListener('click', handleBackButton);
-  }
+  // Add back button handlers
+  document.querySelectorAll('#back-button').forEach(button => {
+    button.addEventListener('click', handleBackButton);
+  });
 });
 
 // Sound effects
@@ -1046,7 +1053,8 @@ function initializeButtonHandlers() {
         btn.onclick = function() { showScreen('settings-page'); };
     });
     document.querySelectorAll('#back-button').forEach(btn => {
-        btn.onclick = handleBackButton;
+        btn.removeEventListener('click', handleBackButton);
+        btn.addEventListener('click', handleBackButton);
     });
     // More from Ted
     const moreFromTedButton = document.getElementById('more-from-ted-button');
@@ -1138,49 +1146,17 @@ function updateChapterButtons() {
         // Update progress text
         progressText.textContent = `${Math.round(currentProgress)}%`;
         
-        // Update caravan position
-        const barWidth = progressBar.offsetWidth;
-        const textWidth = progressText.offsetWidth;
-        const caravanWidth = 40; // Width of caravan icon
-        
-        // Calculate safe boundaries for caravan
-        const minPosition = -20; // Start further left
-        const maxPosition = barWidth - (caravanWidth / 2);
-        const textLeft = (barWidth - textWidth) / 2;
-        const textRight = textLeft + textWidth;
-        
-        // Calculate caravan position
-        let caravanPosition = (currentProgress / 100) * barWidth;
-        
-        // Adjust position if it would overlap with text
-        if (caravanPosition > textLeft - caravanWidth && caravanPosition < textRight + caravanWidth) {
-            if (caravanPosition < barWidth / 2) {
-                caravanPosition = textLeft - caravanWidth - 10; // Add extra padding
+        // Position caravan based on progress
+        if (currentProgress === 0) {
+            // Move caravan even further left at 0%
+            caravanIcon.style.left = '-48px';
+        } else if (currentProgress <= 60) {
+            // Keep caravan further left until 60%
+            caravanIcon.style.left = '-24px';
             } else {
-                caravanPosition = textRight + caravanWidth + 10; // Add extra padding
-            }
+            // Normal positioning after 60%
+            caravanIcon.style.left = '0px';
         }
-        
-        // Ensure caravan stays within bounds
-        caravanPosition = Math.min(Math.max(minPosition, caravanPosition), maxPosition);
-        
-        caravanIcon.style.left = `${caravanPosition}px`;
-        
-        // Update color based on progress
-        if (currentProgress >= 80) {
-            progressFill.style.backgroundColor = '#4CAF50'; // Green
-        } else if (currentProgress >= 40) {
-            progressFill.style.backgroundColor = '#FF9800'; // Orange
-        } else {
-            progressFill.style.backgroundColor = '#FF0000'; // Red
-        }
-        
-        console.log('Updated progress:', {
-            progress: currentProgress,
-            fillWidth: progressFill.style.width,
-            caravanPosition: caravanIcon.style.left,
-            color: progressFill.style.backgroundColor
-        });
     }
 }
 
@@ -1429,23 +1405,6 @@ function getCompletedLocations() {
 
 // Function to reset the trail
 function resetTrail() {
-    const popup = document.createElement('div');
-    popup.className = 'popup-overlay';
-    popup.innerHTML = `
-        <div class="popup-content">
-            <h3>Reset Trail</h3>
-            <p>Are you sure you want to reset your trail progress? This will clear all completed chapters and start you from the beginning.</p>
-            <div class="popup-buttons">
-                <button class="popup-button yes" onclick="confirmResetTrail()">Yes, Reset</button>
-                <button class="popup-button no" onclick="this.parentElement.parentElement.parentElement.remove()">Cancel</button>
-            </div>
-        </div>
-    `;
-    document.body.appendChild(popup);
-}
-
-// Function to confirm trail reset
-function confirmResetTrail() {
     // Clear all state for both trails
     AppState.cycleTrail.completedChapters.clear();
     AppState.carTrail.completedChapters.clear();
@@ -1475,22 +1434,36 @@ function confirmResetTrail() {
     // Reset UI
     AppState.updateUI();
     
-    // Remove the popup
-    document.querySelector('.popup-overlay').remove();
-    
     // Show intro screen
     showScreen('intro-screen');
 }
 
-// Settings handlers
+// Function to show reset confirmation
+function showResetConfirmation() {
+    const popup = document.createElement('div');
+    popup.className = 'popup-overlay';
+    popup.innerHTML = `
+        <div class="popup-content">
+            <h3>Reset Trail</h3>
+            <p>Are you sure you want to reset your trail progress? This will clear all completed chapters and start you from the beginning.</p>
+            <div class="popup-buttons">
+                <button class="popup-button yes" onclick="resetTrail(); this.closest('.popup-overlay').remove();">Yes, Reset</button>
+                <button class="popup-button no" onclick="this.closest('.popup-overlay').remove()">Cancel</button>
+            </div>
+        </div>
+    `;
+    document.body.appendChild(popup);
+}
+
+// Update the settings initialization to use the new function
 function initializeSettings() {
     const volumeSlider = document.getElementById('volume');
     const textSizeSlider = document.getElementById('text-size');
     const backgroundMusic = document.getElementById('background-music');
     
-    // Load saved settings
-    const savedVolume = localStorage.getItem('volume') || 1;
-    const savedTextSize = localStorage.getItem('textSize') || 16;
+    // Load saved settings or use defaults
+    const savedVolume = localStorage.getItem('volume') || 0.6; // 60% default
+    const savedTextSize = localStorage.getItem('textSize') || 12; // 35% of max (24px)
     
     // Apply saved settings
     volumeSlider.value = savedVolume;
@@ -1523,7 +1496,7 @@ function initializeSettings() {
     // Add reset trail button handler
     const resetTrailButton = document.getElementById('reset-trail-button');
     if (resetTrailButton) {
-        resetTrailButton.addEventListener('click', resetTrail);
+        resetTrailButton.addEventListener('click', showResetConfirmation);
     }
 }
 
@@ -1569,9 +1542,8 @@ function handleBackgroundMusic(screenId) {
       screenId === 'chapter-selection-page' ||
       screenId === 'transportation-page') {
     if (backgroundMusic.paused) {
-      backgroundMusic.play().catch((error) => {
-        console.error('Error playing background music:', error);
-      });
+            backgroundMusic.play()
+                .catch(error => console.error('Error playing music on screen change:', error));
     }
   } else {
     if (!backgroundMusic.paused) {
@@ -1580,35 +1552,45 @@ function handleBackgroundMusic(screenId) {
   }
 }
 
-// Ensure music starts immediately on the intro page
-document.addEventListener('DOMContentLoaded', () => {
+// Initialize audio when the page loads
+document.addEventListener('DOMContentLoaded', function() {
   const backgroundMusic = document.getElementById('background-music');
   if (backgroundMusic) {
-    backgroundMusic.volume = 1; // Set volume
-    backgroundMusic.play().catch((error) => {
+        // Set initial volume
+        backgroundMusic.volume = localStorage.getItem('volume') || 1;
+        
+        // Function to attempt playing the music
+        function attemptPlay() {
+            backgroundMusic.play()
+                .then(() => {
+                    console.log('Background music started playing');
+                })
+                .catch(error => {
       console.error('Error playing background music:', error);
-    });
-  }
-  handleBackgroundMusic('intro-screen'); // Ensure music continues on other screens
+                    // Try again after user interaction
+                    document.addEventListener('click', function startMusic() {
+                        backgroundMusic.play()
+                            .then(() => {
+                                console.log('Background music started after user interaction');
+                            })
+                            .catch(e => console.error('Failed to play after interaction:', e));
+                        document.removeEventListener('click', startMusic);
+                    }, { once: true });
+                });
+        }
+
+        // Try to play immediately
+        attemptPlay();
+    }
 });
 
-// Ensure the correct text is displayed on the Start Trail page
-document.addEventListener('DOMContentLoaded', () => {
-  const startPageContent = document.querySelector('.start-page-content');
-  if (startPageContent) {
-    startPageContent.innerHTML = `
-      <h2>Story Guide</h2>
-      <div class="welcome-text">
-        <p>A shocking discovery has been made at Father Ted's house! The Holy Stone of Clonrichert has mysteriously vanished, and Bishop Brennan demands answers!</p>
-
-        <p>Follow this story-based guide as you gather clues to help you discover who stole the Holy Stone.</p>
-
-        <p><strong>Can you help Father Ted by solving the mystery?</strong></p>
-      </div>
-      <img src="assets/images/trail-map.jpg" alt="Craggy Island Trail Map" class="trail-map">
-    `;
+// Add user interaction handler to start music
+document.addEventListener('click', () => {
+  const backgroundMusic = document.getElementById('background-music');
+  if (backgroundMusic && backgroundMusic.paused) {
+    backgroundMusic.play().catch(error => console.error('Error playing music on interaction:', error));
   }
-});
+}, { once: true });
 
 // Update the DOMContentLoaded event listener
 document.addEventListener("DOMContentLoaded", () => {
@@ -2328,30 +2310,27 @@ function updateProgressBar(percentage) {
     const caravanIcon = document.querySelector('.caravan-icon');
     const progressText = document.querySelector('.progress-text');
     
-    // Calculate color based on percentage
-    let r, g, b;
-    if (percentage <= 50) {
-        // Red to Yellow transition (0-50%)
-        r = 255;
-        g = Math.round((percentage / 50) * 255);
-        b = 0;
-    } else {
-        // Yellow to Green transition (50-100%)
-        r = Math.round(255 - ((percentage - 50) / 50) * 255);
-        g = 255;
-        b = 0;
-    }
+    if (!progressBar || !progressFill || !caravanIcon || !progressText) return;
     
-    // Update progress fill color and width
-    progressFill.style.background = `rgb(${r}, ${g}, ${b})`;
+    // Update progress fill width
     progressFill.style.width = `${percentage}%`;
     
     // Update caravan position
-    caravanIcon.style.left = `${percentage}%`;
-    caravanIcon.style.transform = 'translateX(-50%)';
+    const barWidth = progressBar.offsetWidth;
+    const caravanPosition = (percentage / 100) * barWidth;
+    caravanIcon.style.left = `${caravanPosition}px`;
     
     // Update progress text
-    progressText.textContent = `${percentage}%`;
+    progressText.textContent = `${Math.round(percentage)}%`;
+    
+    // Update color based on progress
+    if (percentage >= 80) {
+        progressFill.style.backgroundColor = '#4CAF50'; // Green
+    } else if (percentage >= 40) {
+        progressFill.style.backgroundColor = '#FF9800'; // Orange
+    } else {
+        progressFill.style.backgroundColor = '#FF0000'; // Red
+    }
 }
 
 function calculateRoute(origin, destination) {
